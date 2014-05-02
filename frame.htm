@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<title>frame</title>
+<style>
+body{
+background-color:rgba(0,0,0,1);
+padding:0;
+margin:0;
+font-size:16px;
+}
+#container{
+border:1px solid rgba(200,200,200,1);
+width:800px;
+height:600px;
+margin:80px auto 0;
+overflow:hidden;
+position:relative;
+}
+#bg{
+width:800px;
+height:600px;
+background-color:rgba(255,255,255,0.8);
+}
+#character{
+position:absolute;
+left:200px;
+top:40px;
+width:400px;
+height:560px;
+background-color:rgba(255,220,220,1);
+}
+#dialog{
+border:1px solid rgba(220,220,220,0.9);
+position:absolute;
+left:0;
+top:420px;
+width:798px;
+height:178px;
+background-color:rgba(255,255,255,0.4);
+}
+#optionlist{
+position:absolute;
+left:140px;
+top:10px;
+width:520px;
+height:580px;
+background-color:rgba(255,255,255,0.2);
+overflow:hidden;
+}
+.options{
+border:1px solid rgba(220,220,220,0.9);
+width:518px;
+height:78px;
+margin:0 0 20px;
+background-color:rgba(200,255,200,0.8);
+}
+</style>
+</head>
+<body>
+<div id="container">
+<div id="bg">背景
+</div>
+<div id="character">角色圖
+</div>
+<div id="dialog">對話框
+</div>
+<div id="optionlist">
+<div class="options">選項
+</div>
+<div class="options">選項
+</div>
+<div class="options">選項
+</div>
+<div class="options">選項
+</div>
+<div class="options">選項
+</div>
+<div class="options">選項
+</div>
+</div>
+</div>
+</body>
+</html>
