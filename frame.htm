@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <title>frame</title>
 <style>
 body{
@@ -23,6 +24,7 @@ position:relative;
 width:800px;
 height:600px;
 background-color:rgba(255,255,255,0.8);
+transition:all 1s;
 }
 #character{
 position:absolute;
@@ -33,7 +35,7 @@ height:560px;
 background-color:rgba(255,220,220,1);
 }
 #dialog{
-border:1px solid rgba(220,220,220,0.9);
+border:1px solid rgba(50,50,50,0.9);
 position:absolute;
 left:0;
 top:420px;
@@ -58,14 +60,30 @@ margin:0 0 20px;
 background-color:rgba(200,255,200,0.8);
 }
 </style>
+<script>
+function chBg(color,src){
+if(canvas){
+canvas.clearRect(0,0,ca.width,ca.height);
+imageObj = new Image();
+imageObj.onload = function(){canvas.drawImage(this,0,0);};
+imageObj.src=src;
+$("#bg").css({backgroundColor:color});
+}
+}
+</script>
 </head>
 <body>
 <div id="container">
-<div id="bg">背景
+<div id="bg">
+<canvas id="bgc" width="800" height="600"></canvas>
 </div>
 <div id="character">角色圖
 </div>
-<div id="dialog">對話框
+<div id="dialog">對話框<br>
+<a id="bu1" style="cursor:pointer;color:#5050AA;">隱藏/顯示選項清單</a><br>
+<a id="bu2" style="cursor:pointer;color:#5050AA;">隱藏/顯示角色</a><br>
+<a id="bu3" style="cursor:pointer;color:#5050AA;">改變背景顏色</a><br>
+<a id="bu4" style="cursor:pointer;color:#5050AA;">改變背景圖片</a>
 </div>
 <div id="optionlist">
 <div class="options">選項
@@ -82,5 +100,27 @@ background-color:rgba(200,255,200,0.8);
 </div>
 </div>
 </div>
+<script>
+ca=document.getElementById("bgc");
+canvas=ca.getContext("2d");
+canvas.font="16px 新細明體";
+canvas.fillStyle="rgba(0,0,0,1)";
+canvas.fillText("背景",0,14);
+$("#bu1").click(function(){
+$("#optionlist").toggle();
+})
+$("#bu2").click(function(){
+$("#character").toggle();
+})
+$("#bu3").click(function(){
+chBg("rgba("+Math.floor(100+Math.random()*155)+","+Math.floor(100+Math.random()*155)+","+Math.floor(100+Math.random()*155)+","+(Math.floor(6+Math.random()*4)/10)+")","");
+})
+$("#bu4").click(function(){
+url=prompt("讀取背景請輸入圖片網址(含http://)： [無防呆/安全防護]","https://www.google.com.tw/images/srpr/logo11w.png");
+if(url){
+chBg("rgba(255,255,255,0)",url);
+}
+})
+</script>
 </body>
 </html>
