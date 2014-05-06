@@ -18,8 +18,8 @@
   }
 },
 "episode":{
-  0:{
-    0:{
+  "0":{
+    "0":{
       "bg":"bgid1",
       "ch":["player"],
       "spkr":"name",
@@ -45,24 +45,24 @@
         "item2":{
           "act":{
             "ch1":{
-              "param2":1;
+              "param2":1
             }
           }
         }
       }
     },
-    1:{
+    "1":{
       "spkr":"name",
       "line":"string"
     },
-    2:{
+    "2":{
       "ch":["ch1"],
       "spkr":"name",
       "line":"string"
     }
   },
-  1:{
-    0:{
+  "1":{
+    "0":{
       "end":{
         "next":"chapter_file",
         "reset":{
