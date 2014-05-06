@@ -26,10 +26,10 @@
       "line":"string"
       "act":{
         "player":{
-          "param1":1
+          "param1":"+1"
         },
         "ch1":{
-          "param1":-1
+          "param1":"-1"
         }
       }
       "goto":[0,1],
@@ -37,7 +37,7 @@
         "item1":{
           "act":{
             "player":{
-              "param1":-1
+              "param1":"-1"
             }
           },
           "goto":[1,0]
@@ -45,7 +45,7 @@
         "item2":{
           "act":{
             "ch1":{
-              "param2":1
+              "param2":"+1"
             }
           }
         }
@@ -59,6 +59,21 @@
       "ch":["ch1"],
       "spkr":"name",
       "line":"string"
+    },
+    "3":{
+      "if":{
+        "condition":{
+          "compare":">|<|=",
+          "ch":"player",
+          "param":"param1"
+        },
+        "act":{
+          "ch1":{
+            "param2":"=1"
+          }
+        },
+        "goto":[0,1]
+      }
     }
   },
   "1":{
