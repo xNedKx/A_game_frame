@@ -1,0 +1,80 @@
+{
+"chapter":1,
+"bg":{
+  "bgid1":"file1",
+  "bgid2":"file2",
+},
+"ch":{
+  "player":{
+    "pic":"file",
+    "name":"name",
+    "param1":"data"
+  },
+  "ch1":{
+    "pic":"file",
+    "name":"name",
+    "param1":"data",
+    "param2":["data"]
+  }
+},
+"episode":{
+  0:{
+    0:{
+      "bg":"bgid1",
+      "ch":["player"],
+      "spkr":"name",
+      "line":"string"
+      "act":{
+        "player":{
+          "param1":1
+        },
+        "ch1":{
+          "param1":-1
+        }
+      }
+      "goto":[0,1],
+      "select":{
+        "item1":{
+          "act":{
+            "player":{
+              "param1":-1
+            }
+          },
+          "goto":[1,0]
+        },
+        "item2":{
+          "act":{
+            "ch1":{
+              "param2":1;
+            }
+          }
+        }
+      }
+    },
+    1:{
+      "spkr":"name",
+      "line":"string"
+    },
+    2:{
+      "ch":["ch1"],
+      "spkr":"name",
+      "line":"string"
+    }
+  },
+  1:{
+    0:{
+      "end":{
+        "next":"chapter_file",
+        "reset":{
+          "player":{
+            "param1":null
+          },
+          "ch1":{
+            "param2":null
+          }
+        }
+      }
+    }
+  }
+}
+}
