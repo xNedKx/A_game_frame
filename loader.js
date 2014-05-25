@@ -9,57 +9,107 @@ function Options(){
 }
 function Frame(){
   //vars
-  var container,BGdiv,CHdiv,dialog,optionlist,canvas,BGcanvas,data,pointer;
+  var container,BGdiv,CHdiv,dialog,optionlist,canvas,BGcanvas,data,pointer,frameWidth,frameHeight,frameFontSize;
   ajax=new XMLHttpRequest();
+  frame=this;
   //functions
   function valid(str){
     return true;//這裡要放資源路徑驗證
   }
   function cleanStr(str){
-    return str;//清除injection
+    return str;//以後要清除injection
   }
-  //之後改成內部function
-  this.say=function(characters,line){
-    names=[];
-    if(typeof(characters)=="string"){
-      names.push(cleanStr(characters))
+  function loadData(url){
+    if(valid(url)){
+      /*try{
+        ajax.open('get',url,false);
+        ajax.send();
+        rawData=ajax.responseText;*/
+        //以下方式可用於chrome離線，但只接受js檔，所以不能用完全符合JSON的格式儲存資料，也許用JSONP。
+        load=document.createElement('script');
+        load.onload=function(){check(rawData);};
+        load.style.display='none';
+        load.src=url;
+        document.body.appendChild(load);
+        data=rawData;
+      /*}
+      catch(e){return false;}
+      try{data=JSON.parse(rawData);}
+      catch(e){return false;}*/
+      return data;
     }else{
-      for(var i in characters){names.push(cleanStr(i));};
+      return false;
+    }
+  }
+  function setStage(keepParam){
+    
+  }
+  function checkEP(p){
+    
+  }
+  function chBG(color,src){//暫時
+    BGcanvas.clearRect(0,0,canvas.width,canvas.height);
+    try{imageObj = new Image();
+    imageObj.onload = function(){BGcanvas.drawImage(this,0,0);};
+    imageObj.src=src;}catch(e){}
+    BGdiv.style.backgroundColor=color;
+  }
+  function chCH(character,type){
+    
+  }
+  function chDL(spkr,line){//暫時
+    names=[];
+    if(typeof(spkr)=="string"){
+      names.push(cleanStr(spkr))
+    }else{
+      for(var i in spkr){names.push(cleanStr(i));};
     }
     dialog.innerHTML='<p>'+names.join('、')+'</p><p>'+cleanStr(line)+'</p>'
   }
-  //暫時function
-  this.changeBG=function(color,src){
-    BGcanvas.clearRect(0,0,canvas.width,canvas.height);
-    imageObj = new Image();
-    imageObj.onload = function(){BGcanvas.drawImage(this,0,0);};
-    imageObj.src=src;
-    BGdiv.style.backgroundColor=color;
+  function chPA(character,param,change){
+    
   }
-  //測試用，為了外部存取方便設成method
-  this.toggleOptionlist=function(){
-    optionlist.style.display=(optionlist.style.display=='none')?'block':'none';
+  function condition(param,condition,acts){
+    
   }
-  this.toggleCHdiv=function(){
-    CHdiv.style.display=(CHdiv.style.display=='none')?'block':'none';
+  function nextEP(){
+    if(typeof(data.episode[pointer[0]][pointer[1]+1])=="object"){
+      pointer[1]++;
+      checkEP(pointer);
+    }else if(typeof(data.episode[pointer[0]+1][0])=="object"){
+      pointer[0]++;
+      pointer[1]=0;
+      checkEP(pointer);
+    }else{
+      
+    }
+  }
+  function toEP(epAr){
+    
+  }
+  function endEP(){
+    
+  }
+  function nextStage(){
+    
   }
   //PROPERTIES
   this.backgrounds={};
   this.characters={};
   //METHODS
-  this.createFrame=function(frameWidth,frameHeight,frameFontSize){
+  this.createFrame=function(FW,FH,FFS){
   //create startup elements & style setting
-  frameWidth=frameWidth?frameWidth:800;
-  frameHeight=frameHeight?frameHeight:600;
-  frameFontSize=frameFontSize?frameFontSize:16;
-  
+  frameWidth=FW?FW:800;
+  frameHeight=FH?FH:600;
+  frameFontSize=FFS?FFS:16;
+  //建立tag
   container=container?container:document.createElement('div');
   BGdiv=BGdiv?BGdiv:document.createElement('div');
   canvas=canvas?canvas:document.createElement('canvas');
   CHdiv=CHdiv?CHdiv:document.createElement('div');
   dialog=dialog?dialog:document.createElement('div');
   optionlist=optionlist?optionlist:document.createElement('div');
-  
+  //CSS設定
   container.style.width=frameWidth+'px';
   container.style.height=frameHeight+'px';
   container.style.overflow='hidden';
@@ -70,7 +120,7 @@ function Frame(){
   container.style.margin='80px auto 0';
   BGdiv.style.width=frameWidth+'px';
   BGdiv.style.height=frameHeight+'px';
-  BGdiv.style.transition='all 0.6s';//暫時先設定漸變
+  BGdiv.style.transition='all 0.6s';//暫時先設定有漸變
   canvas.width=frameWidth;
   canvas.height=frameHeight;
   CHdiv.style.width=frameWidth+'px';
@@ -93,37 +143,37 @@ function Frame(){
   optionlist.style.top='0px';
   optionlist.style.left=frameWidth*0.175+'px';
   optionlist.style.zIndex='100';
-  
+  //組合!!
   container.appendChild(BGdiv);
   BGdiv.appendChild(canvas);
   container.appendChild(CHdiv);
   container.appendChild(dialog);
   container.appendChild(optionlist);
-  
+  //BG的canvas
   BGcanvas=canvas.getContext("2d");
   BGcanvas.font=(frameFontSize+'px 新細明體');
   BGcanvas.fillStyle='rgba(255,255,255,1)';//預設填色
-  
-  //測試填入
-  CHdiv.innerHTML='角色圖層';
-  optionlist.style.backgroundColor='rgba(200,50,50,0.3)';
-  optionlist.innerHTML='選單框框';
-  this.say('測試','對話框');
-  BGcanvas.fillText('背景',0,frameFontSize/2+6);
   }
   this.appendTo=function(DOM){
     try{DOM.appendChild(container);}
     catch(e){return false;}
   }
-  this.loadData=function(url){
-    if(valid(url)){
-      try{rawData=$.get(url);}//我還不清楚jquery的ajax載入方法(PS:這樣離線會無法使用，另外chrome不支援include本機檔案)
-      catch(e){return false;}
-      try{data=JSON.parse(rawData);}
-      catch(e){return false;}
-      return data;
-    }else{
-      return false;
-    }
+  //目前debug用
+  this.say=chDL;
+  this.changeBG=chBG;
+  //測試用
+  this.toggleOptionlist=function(){
+    optionlist.style.display=(optionlist.style.display=='none')?'block':'none';
+  }
+  this.toggleCHdiv=function(){
+    CHdiv.style.display=(CHdiv.style.display=='none')?'block':'none';
+  }
+  this.beta=function(){
+    //測試填入
+    CHdiv.innerHTML='角色圖層';
+    optionlist.style.backgroundColor='rgba(200,50,50,0.3)';
+    optionlist.innerHTML='選單框框';
+    chDL('測試','對話框');
+    BGcanvas.fillText('背景',0,frameFontSize/2+6);
   }
 }

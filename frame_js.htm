@@ -8,6 +8,7 @@
 window.onload=function(){
 x=new Frame();
 x.createFrame();
+x.beta();
 x.appendTo(document.body);
 x.say('hello','<a onclick="x.toggleOptionlist()" style="cursor:pointer;color:#5050AA;">隱藏/顯示選單</a><br><a onclick="x.toggleCHdiv()" style="cursor:pointer;color:#5050AA;">隱藏/顯示角色圖層</a><br><a onclick=\'x.changeBG("rgba("+Math.floor(100+Math.random()*155)+","+Math.floor(100+Math.random()*155)+","+Math.floor(100+Math.random()*155)+","+(Math.floor(6+Math.random()*4)/10)+")","")\' style="cursor:pointer;color:#5050AA;">改變背景顏色</a><br><a onclick=\'url=prompt("讀取背景請輸入圖片網址(含http://)： [無防呆/安全防護]","https://www.google.com.tw/images/srpr/logo11w.png");if(url){x.changeBG("rgba(255,255,255,0)",url);}\' style="cursor:pointer;color:#5050AA;">改變背景圖片</a>');
 }

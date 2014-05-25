@@ -1,8 +1,9 @@
+var rawData=
 {
 "chapter":1,
 "bg":{
   "bgid1":"file1",
-  "bgid2":"file2",
+  "bgid2":"file2"
 },
 "ch":{
   "player":{
@@ -23,7 +24,7 @@
       "bg":"bgid1",
       "ch":["player"],
       "spkr":"name",
-      "line":"string"
+      "line":"string",
       "act":{
         "player":{
           "param1":"+1"
@@ -31,7 +32,7 @@
         "ch1":{
           "param1":"-1"
         }
-      }
+      },
       "goto":[0,1],
       "select":{
         "item1":{
