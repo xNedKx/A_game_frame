@@ -9,34 +9,41 @@ function Options(){
 }
 function Frame(){
   //vars
-  var container,BGdiv,CHdiv,dialog,optionlist,canvas,BGcanvas,data,pointer,frameWidth,frameHeight,frameFontSize;
+  var container,BGdiv,CHdiv,dialog,optionlist,canvas,BGcanvas,data,pointer,frameWidth,frameHeight,frameFontSize,characters,backgrounds,rawData;
   ajax=new XMLHttpRequest();
+  backgrounds={};
+  characters={};
   frame=this;
   //functions
+  function error(str){
+    window.console.error(str);
+    return false;
+  }
   function valid(str){
     return true;//這裡要放資源路徑驗證
   }
   function cleanStr(str){
     return str;//以後要清除injection
   }
+  function check(obj){
+    return obj;//以後要確認物件資訊
+  }
   function loadData(url){
     if(valid(url)){
-      /*try{
-        ajax.open('get',url,false);
-        ajax.send();
-        rawData=ajax.responseText;*/
-        //以下方式可用於chrome離線，但只接受js檔，所以不能用完全符合JSON的格式儲存資料，也許用JSONP。
-        load=document.createElement('script');
-        load.onload=function(){check(rawData);};
-        load.style.display='none';
-        load.src=url;
-        document.body.appendChild(load);
-        data=rawData;
-      /*}
-      catch(e){return false;}
-      try{data=JSON.parse(rawData);}
-      catch(e){return false;}*/
-      return data;
+      //以下方式可用於chrome離線，但只接受script，所以不能用完全符合JSON的格式儲存資料，算是JSONP?
+      scriptContain=document.createElement('iframe');
+      scriptContain.id='scriptLoader'+(ran=Math.ceil(Math.random()*10000));
+      scriptContain.style.display='none';
+      scriptLoad=document.createElement('script');
+      scriptLoad.onload=function(){
+        sIfr=document.getElementById('scriptLoader'+ran);
+        data=check(sIfr.contentWindow.rawData);
+        this.parentNode.removeChild(this);
+        sIfr.parentNode.removeChild(sIfr);
+      };
+      scriptLoad.src=url;
+      document.body.appendChild(scriptContain);
+      scriptContain.contentDocument.body.appendChild(scriptLoad);//暫時先這樣..
     }else{
       return false;
     }
@@ -69,7 +76,7 @@ function Frame(){
   function chPA(character,param,change){
     
   }
-  function condition(param,condition,acts){
+  function condition(character,param,condition,acts){
     
   }
   function nextEP(){
@@ -81,11 +88,16 @@ function Frame(){
       pointer[1]=0;
       checkEP(pointer);
     }else{
-      
+      error("");
     }
   }
   function toEP(epAr){
-    
+    if(typeof(epAr)=="array" && epAr.length==2 && typeof(data.episode[epAr[0]][epAr[1]])=="object"){
+      pointer=epAr;
+      return pointer;
+    }else{
+      error("");
+    }
   }
   function endEP(){
     
@@ -94,8 +106,6 @@ function Frame(){
     
   }
   //PROPERTIES
-  this.backgrounds={};
-  this.characters={};
   //METHODS
   this.createFrame=function(FW,FH,FFS){
   //create startup elements & style setting
@@ -161,6 +171,8 @@ function Frame(){
   //目前debug用
   this.say=chDL;
   this.changeBG=chBG;
+  this.load=loadData;
+  this.showData=function(){console.log(data);alert('chapter: '+data['chapter']);}
   //測試用
   this.toggleOptionlist=function(){
     optionlist.style.display=(optionlist.style.display=='none')?'block':'none';
