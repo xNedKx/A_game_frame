@@ -48,17 +48,43 @@ function Frame(){
       return false;
     }
   }
-  function setStage(keepParam){
-    
+  function setStage(removeParam){
+    if(data){
+      backgrounds=[];
+      imageObj=[];
+      for(var i in data['bg']){
+		backgrounds[i]=data['bg'][i];
+        imageObj[i] = new Image();
+        imageObj[i].id=i;
+        imageObj[i].onload = function(){backgrounds[this.id]=this; delete imageObj[this.id];};
+        imageObj[i].src=data['bg'][i];
+      }
+      if(typeof(removeParam)!='undefined' && removeParam){characters=[];}
+      //可選擇是否清除所有之前場景的人物資料，目前玩家角色也算在內
+      for(i in data['ch']){
+        if(typeof(characters[i])=='undefined'){characters[i]=data['ch'][i];}
+        else{
+          for(var j in data['ch'][i]){
+            if(typeof(characters[i][j])=='undefined'){
+              characters[i][j]=par(data['ch'][i][j],false);
+            }
+          }
+        }
+        imageObj[i+'_p'] = new Image();
+        imageObj[i+'_p'].id=i+'_p';
+        imageObj[i+'_p'].onload = function(){characters[this.id.slice(0,-2)]['pic']=this;delete imageObj[this.id];};
+        imageObj[i+'_p'].src=data['ch'][i]['pic'];
+      }
+    }
   }
   function checkEP(p){
     
   }
   function chBG(color,src){//暫時
     BGcanvas.clearRect(0,0,canvas.width,canvas.height);
-    try{imageObj = new Image();
-    imageObj.onload = function(){BGcanvas.drawImage(this,0,0);};
-    imageObj.src=src;}catch(e){}
+    try{tmpIMG = new Image();
+    tmpIMG.onload = function(){BGcanvas.drawImage(this,0,0);delete tmpIMG;};
+    tmpIMG.src=src;}catch(e){}
     BGdiv.style.backgroundColor=color;
   }
   function chCH(character,type){
@@ -73,8 +99,42 @@ function Frame(){
     }
     dialog.innerHTML='<p>'+names.join('、')+'</p><p>'+cleanStr(line)+'</p>'
   }
+  function par(param,change,override){
+    // + - * / = 會強制影響原數值，純數字在場景設定時會保留上一場景的數值，劇情中則等同=
+    change=change.toString();
+    m=change.substr(0,1);
+    if(change.match(/^[\+\-\*/\=0-9][0-9]*$/) && Number(param)==param){
+      param=Number(param);
+      cs=Number(change.slice(1));
+      switch(m){
+        case '+':
+        return param+cs;
+        break;
+        case '-':
+        return param-cs;
+        break;
+        case '*':
+        return param*cs;
+        break;
+        case '/':
+        return Math.floor(param/cs);
+        break;
+        case '=':
+        return cs;
+        break;
+        default:
+        return (typeof(override)!='undefined' && override)?Number(change):param;
+      }
+    }else{
+      return (typeof(override)!='undefined' && override)?cleanStr(change):param;
+    }
+  }
   function chPA(character,param,change){
-    
+    if(typeof(characters[character])!='undefined' && typeof(characters[character][param])!='undefined'){
+      return characters[character][param]=par(characters[character][param],change.toString(),true);
+    }else{
+      return false;
+    }
   }
   function condition(character,param,condition,acts){
     
@@ -172,7 +232,11 @@ function Frame(){
   this.say=chDL;
   this.changeBG=chBG;
   this.load=loadData;
-  this.showData=function(){console.log(data);alert('chapter: '+data['chapter']);}
+  this.showData=function(){console.log(data);alert(data?'chapter: '+data['chapter']:'尚未載入資料');}
+  this.set=setStage;
+  this.showBG=function(){console.log(backgrounds);};
+  this.showCH=function(){console.log(characters);};
+  this.chp=chPA;
   //測試用
   this.toggleOptionlist=function(){
     optionlist.style.display=(optionlist.style.display=='none')?'block':'none';
