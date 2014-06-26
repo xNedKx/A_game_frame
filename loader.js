@@ -1,15 +1,6 @@
-function Background(){
-
-}
-function Characters(){
-
-}
-function Options(){
-
-}
 function Frame(){
   //vars
-  var container,BGdiv,CHdiv,dialog,optionlist,canvas,BGcanvas,data,pointer,frameWidth,frameHeight,frameFontSize,characters,backgrounds,rawData;
+  var container,BGdiv,CHdiv,dialog,optionlist,canvas,BGcanvas,data,pointer,nextP,frameWidth,frameHeight,frameFontSize,characters,backgrounds,rawData;
   ajax=new XMLHttpRequest();
   backgrounds={};
   characters={};
@@ -18,6 +9,10 @@ function Frame(){
   function error(str){
     window.console.error(str);
     return false;
+  }
+  function isset(v){
+    if(typeof(v)!='undefined'){return true;}
+    else{return false;}
   }
   function valid(str){
     return true;//這裡要放資源路徑驗證
@@ -59,13 +54,13 @@ function Frame(){
         imageObj[i].onload = function(){backgrounds[this.id]=this; delete imageObj[this.id];};
         imageObj[i].src=data['bg'][i];
       }
-      if(typeof(removeParam)!='undefined' && removeParam){characters=[];}
+      if(isset(removeParam)/*typeof(removeParam)!='undefined'*/ && removeParam){characters=[];}
       //可選擇是否清除所有之前場景的人物資料，目前玩家角色也算在內
       for(i in data['ch']){
-        if(typeof(characters[i])=='undefined'){characters[i]=data['ch'][i];}
+        if(isset(characters[i])/*typeof(characters[i])=='undefined'*/){characters[i]=data['ch'][i];}
         else{
           for(var j in data['ch'][i]){
-            if(typeof(characters[i][j])=='undefined'){
+            if(isset(characters[i][j])/*typeof(characters[i][j])=='undefined'*/){
               characters[i][j]=par(data['ch'][i][j],false);
             }
           }
@@ -77,33 +72,89 @@ function Frame(){
       }
     }
   }
-  function checkEP(p){
-    
+  function checkEP(p){//切換背景→切換角色→台詞→預設參數變化→預設跳接→選擇→如果→執行跳接 | 章節結束
+    if(typeof(p)=='object'){
+       (isset(p.bg) && isset(backgrounds[p.bg]))?chBG('rgba(0,0,0,1)',backgrounds[p.bg]):null;//BG
+       if(typeof(p.ch)=='array'){for(i in p.ch){isset(characters[i])?chCH(i):null;}}
+       else if(typeof(p.ch)=='string'){isset(characters[p.ch])?chCH(p.ch):null;}//CH
+       typeof(p.line)=='string'?chDL(isset(p.spkr)?p.spkr:'',p.line):null;//DL
+       if(isset(p.act)){for(i in p.act){if(isset(characters[i])){for(j in p.act[i]){chPA(i,j,p.act[i][j])}}}}//PA
+       if(typeof(p.goto)=='array' && p.goto.length==2){nextP=p.goto;}
+       else if(typeof(data.episode[pointer[0]][pointer[1]+1])=="object"){nextP=[pointer[0],pointer[1]+1];}
+       else if(typeof(data.episode[pointer[0]+1][0])=="object"){nextP=[pointer[0]+1,0]}
+       else{error('next EP fail')};//Next
+       /*typeof(p.select);
+       typeof(p.if);
+       typeof(p.end);*/
+    }else{
+      return error('EP data error');
+    }
   }
   function chBG(color,src){//暫時
     BGcanvas.clearRect(0,0,canvas.width,canvas.height);
+    if(typeof(src)=='string'){
     try{tmpIMG = new Image();
     tmpIMG.onload = function(){BGcanvas.drawImage(this,0,0);delete tmpIMG;};
-    tmpIMG.src=src;}catch(e){}
+    tmpIMG.src=src;}catch(e){}}
+    else if(typeof(src)=='object'){BGcanvas.drawImage(src,0,0);}
     BGdiv.style.backgroundColor=color;
   }
-  function chCH(character,type){
-    
+  function addCH(chA){
+    for(i in chA){
+      if(characters[i] && typeof(characters[i]['pic'])=='object'){
+        characters[i]['pic'].style.transition='all 0.4s';
+        characters[i]['pic'].style.position='absolute';
+        characters[i]['pic'].style.top='0';
+        characters[i]['pic'].style.left='0';//還需要做座標整理函式
+        CHdiv.appendChild(characters[i]['pic']);
+      }
+    }
+  }
+  function remCH(chA){
+    for(i in chA){
+      if(characters[i] && typeof(characters[i]['pic'])=='object'){
+        CHdiv.removeChild(characters[i]['pic']);
+      }
+    }
+  }
+  function setCH(chA){
+    while(CHdiv.firstChild){
+      CHdiv.removeChild(CHdiv.firstChild);
+    }
+    addCH(chA);
+  }
+  function chCH(chStr){
+    if(typeof(chStr)=='string'){
+      var m=chStr.match(/^[\+\-]/);
+      chA=cleanStr(chStr);
+      switch(m){
+        case '+':
+        addCH(chA.slice(1).split(','));
+        break;
+        case '-':
+        remCH(chA.slice(1).split(','));
+        break;
+        default:
+        setCH(chA.split(','));
+      }
+    }else{
+      return false;
+    }
   }
   function chDL(spkr,line){//暫時
     names=[];
-    if(typeof(spkr)=="string"){
+    if(typeof(spkr)=='string'){
       names.push(cleanStr(spkr))
-    }else{
-      for(var i in spkr){names.push(cleanStr(i));};
+    }else if(typeof(spkr)=='array'){
+      for(var i in spkr){names.push(cleanStr(i));}
     }
-    dialog.innerHTML='<p>'+names.join('、')+'</p><p>'+cleanStr(line)+'</p>'
+    dialog.innerHTML='<p>'+names.join('、')+'</p><p>'+cleanStr(line)+'</p>';
   }
   function par(param,change,override){
     // + - * / = 會強制影響原數值，純數字在場景設定時會保留上一場景的數值，劇情中則等同=
     change=change.toString();
-    m=change.substr(0,1);
     if(change.match(/^[\+\-\*/\=0-9][0-9]*$/) && Number(param)==param){
+      m=change.substr(0,1);
       param=Number(param);
       cs=Number(change.slice(1));
       switch(m){
@@ -136,29 +187,24 @@ function Frame(){
       return false;
     }
   }
+  function selections(ops){//ops->id:{act:{ch:{pa:cha}},goto:[n,m]}
+    
+  }
   function condition(character,param,condition,acts){
     
   }
   function nextEP(){
-    if(typeof(data.episode[pointer[0]][pointer[1]+1])=="object"){
-      pointer[1]++;
-      checkEP(pointer);
-    }else if(typeof(data.episode[pointer[0]+1][0])=="object"){
-      pointer[0]++;
-      pointer[1]=0;
-      checkEP(pointer);
-    }else{
-      error("");
-    }
+    pointer=nextP;
+    checkEP(pointer);
   }
-  function toEP(epAr){
+  /*function toEP(epAr){
     if(typeof(epAr)=="array" && epAr.length==2 && typeof(data.episode[epAr[0]][epAr[1]])=="object"){
       pointer=epAr;
       return pointer;
     }else{
       error("");
     }
-  }
+  }*/
   function endEP(){
     
   }
