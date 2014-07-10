@@ -74,18 +74,19 @@ function Frame(){
   }
   function checkEP(p){//切換背景→切換角色→台詞→預設參數變化→預設跳接→選擇→如果→執行跳接 | 章節結束
     if(typeof(p)=='object'){
-       (isset(p.bg) && isset(backgrounds[p.bg]))?chBG('rgba(0,0,0,1)',backgrounds[p.bg]):null;//BG
-       if(typeof(p.ch)=='array'){for(i in p.ch){isset(characters[i])?chCH(i):null;}}
-       else if(typeof(p.ch)=='string'){isset(characters[p.ch])?chCH(p.ch):null;}//CH
-       typeof(p.line)=='string'?chDL(isset(p.spkr)?p.spkr:'',p.line):null;//DL
-       if(isset(p.act)){for(i in p.act){if(isset(characters[i])){for(j in p.act[i]){chPA(i,j,p.act[i][j])}}}}//PA
-       if(typeof(p.goto)=='array' && p.goto.length==2){nextP=p.goto;}
-       else if(typeof(data.episode[pointer[0]][pointer[1]+1])=="object"){nextP=[pointer[0],pointer[1]+1];}
-       else if(typeof(data.episode[pointer[0]+1][0])=="object"){nextP=[pointer[0]+1,0]}
-       else{error('next EP fail')};//Next
-       /*typeof(p.select);
-       typeof(p.if);
-       typeof(p.end);*/
+      (isset(p.bg) && isset(backgrounds[p.bg]))?chBG('rgba(0,0,0,1)',backgrounds[p.bg]):null;//BG
+      if(typeof(p.ch)=='array'){for(i in p.ch){isset(characters[i])?chCH(i):null;}}
+      else if(typeof(p.ch)=='string'){isset(characters[p.ch])?chCH(p.ch):null;}//CH
+      typeof(p.line)=='string'?chDL(isset(p.spkr)?p.spkr:'',p.line):null;//DL
+      if(isset(p.act)){for(i in p.act){if(isset(characters[i])){for(j in p.act[i]){chPA(i,j,p.act[i][j])}}}}//PA
+      if(typeof(p.goto)=='array' && p.goto.length==2){nextP=p.goto;}
+      else if(typeof(data.episode[pointer[0]][pointer[1]+1])=="object"){nextP=[pointer[0],pointer[1]+1];}
+      else if(typeof(data.episode[pointer[0]+1][0])=="object"){nextP=[pointer[0]+1,0]}
+      else{error('next EP fail')};//Next
+      if(isset(p.select)){selections(p.select);}
+      if(isset(p.if)){condition(p.if);}
+      if(isset(p.end)){endEP(p.end);}
+      else if(isset(p.next)){nextEP();}
     }else{
       return error('EP data error');
     }
@@ -187,29 +188,80 @@ function Frame(){
       return false;
     }
   }
-  function selections(ops){//ops->id:{act:{ch:{pa:cha}},goto:[n,m]}
-    
+  function selections(ops){//ops->id:{op:option,act:{ch:{pa:cha}},goto:[n,m]}
+    if(isset(ops)){
+      optionlist.innerText='';
+      for(o in ops){
+        if(!(isset(ops[o].op)&&(isset(ops[o].act)||isset(ops[o].goto)))){error('selection item error.');continue;}
+        else{
+          opTmp=document.createElement('div');
+          opTmp.style.width=frameWidth*0.5+'px';
+          opTmp.style.minHeight=frameHeight/10+'px';
+          opTmp.style.height=frameHeight/ops.length+'px';
+          opTmp.style.margin='auto';
+          opTmp.style.textAlign='center';
+          opTmp.style.backgroundColor='rgba(200,200,200,0.4)';
+          opTmp.style.cursor='pointer';
+          opTmp.innerText=ops[o].op;
+          opTmp.op=ops[o].op;
+          opTmp.onclick=function(){
+            if(isset(this.op.act)){for(i in this.op.act){if(isset(characters[i])){for(j in this.op.act[i]){chPA(i,j,this.op.act[i][j])}}}}//PA
+            if(typeof(this.op.goto)=='array' && this.op.goto.length==2){nextP=this.op.goto;}//Next
+            pn=this.parentNode;
+            while(pn.firstChild){pn.removeChild(pn.firstChild)};
+            optionlist.style.display='none';
+            nextEP();
+          };
+          optionlist.appendChild(opTmp);
+        }
+      }
+      optionlist.style.display='block';
+    }else{
+      return error('selection error.')
+    }
   }
-  function condition(character,param,condition,acts){
-    
+  function condition(ifo){//if:{condition:{compare:'>|<|=',ch:n,param:p,data:m},act:{},goto:{}} 目前設定一次只能判定一個數值
+    if(!(isset(ifo.condition.compare)&&isset(ifo.condition.data)&&(isset(ifo.act)||isset(ifo.goto))&& isset(characters[ifo.condition.ch][ifo.condition.param]))){return error('condition error.');}
+    else{
+      switch(ifo.ondition.compare){
+      case '>':
+      if(characters[ifo.condition.ch][ifo.condition.param]>Number(ifo.condition.data)){
+        if(isset(ifo.act)){for(i in ifo.act){if(isset(characters[i])){for(j in ifo.act[i]){chPA(i,j,ifo.act[i][j])}}}}
+        if(typeof(ifo.goto)=='array' && ifo.goto.length==2){nextP=ifo.goto;}
+      }
+      break;
+      case '<':
+      if(characters[ifo.condition.ch][ifo.condition.param]<Number(ifo.condition.data)){
+        if(isset(ifo.act)){for(i in ifo.act){if(isset(characters[i])){for(j in ifo.act[i]){chPA(i,j,ifo.act[i][j])}}}}
+        if(typeof(ifo.goto)=='array' && ifo.goto.length==2){nextP=ifo.goto;}
+      }
+      break;
+      case '=':
+      if(characters[ifo.condition.ch][ifo.condition.param]==Number(ifo.condition.data)){
+        if(isset(ifo.act)){for(i in ifo.act){if(isset(characters[i])){for(j in ifo.act[i]){chPA(i,j,ifo.act[i][j])}}}}
+        if(typeof(ifo.goto)=='array' && ifo.goto.length==2){nextP=ifo.goto;}
+      }
+      break;
+      default:
+      return error('compare error.');
+      }
+    }
   }
   function nextEP(){
     pointer=nextP;
     checkEP(pointer);
   }
-  /*function toEP(epAr){
-    if(typeof(epAr)=="array" && epAr.length==2 && typeof(data.episode[epAr[0]][epAr[1]])=="object"){
-      pointer=epAr;
-      return pointer;
-    }else{
-      error("");
+  function endEP(end){
+    if(isset(end)){
+      if(isset(end.next)){nextStage(end);}
+      else{title();}
     }
-  }*/
-  function endEP(){
+  }
+  function nextStage(stage){
     
   }
-  function nextStage(){
-    
+  function title(){
+  
   }
   //PROPERTIES
   //METHODS
@@ -259,6 +311,7 @@ function Frame(){
   optionlist.style.top='0px';
   optionlist.style.left=frameWidth*0.175+'px';
   optionlist.style.zIndex='100';
+  optionlist.style.display='none';
   //組合!!
   container.appendChild(BGdiv);
   BGdiv.appendChild(canvas);
@@ -283,6 +336,7 @@ function Frame(){
   this.showBG=function(){console.log(backgrounds);};
   this.showCH=function(){console.log(characters);};
   this.chp=chPA;
+  this.ops=selections;
   //測試用
   this.toggleOptionlist=function(){
     optionlist.style.display=(optionlist.style.display=='none')?'block':'none';

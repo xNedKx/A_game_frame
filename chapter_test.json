@@ -36,6 +36,7 @@ var rawData=
       "goto":[0,1],
       "select":{
         "item1":{
+          "op":'line',
           "act":{
             "player":{
               "param1":"-1"
@@ -44,6 +45,7 @@ var rawData=
           "goto":[1,0]
         },
         "item2":{
+          "op":'line',
           "act":{
             "ch1":{
               "param2":"+1"
@@ -66,7 +68,8 @@ var rawData=
         "condition":{
           "compare":">|<|=",
           "ch":"player",
-          "param":"param1"
+          "param":"param1",
+          "data":"0"
         },
         "act":{
           "ch1":{
@@ -74,7 +77,8 @@ var rawData=
           }
         },
         "goto":[0,1]
-      }
+      },
+      "next":true
     }
   },
   "1":{
