@@ -36,7 +36,6 @@ function Cwait(){
 }
 function Csing(){
   hint.style.display='none';
-  hint.bl=false;
   con.onclick=null;
   con.style.cursor='default';
   window.clearTimeout(bl);
@@ -116,8 +115,8 @@ lines=[
 '有設定強制換行，所以英文單字可能會被切斷。\n.\n.\n.\n.\n.\n.\n.\n目前超過10行的字會看不到。',
 '20|The quick brown fox jumps over the lazy dog.',
 '10|AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\nBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\nDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n\nEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE',
-'60|使用定寬字，一行有45個半形英數，或25個中文，但是中英混合排版還是會跑掉。',
-'0|THEENDTHEENDTHEENDTHEENDTHEENDTHEENDTHEENDTHE\nEN     ND HEE D     DTHEEND     D HEE D    ND\nTH     HE NDT E     EENDTHE     E  DT E     E\nENDT EEND HEE D HEENDTHEEND HEEND  EE D HEE D\nTHEE DTHE     E     EENDTHE     E   T E NDT E\nENDT EEND     D     DTHEEND     D H   D HEE D\nTHEE DTHE NDT E NDTHEENDTHE NDTHE ND  E NDT E\nENDT EEND HEE D     DTHEEND     D HE  D     D\nTHEE DTHE NDT E     EENDTHE     E NDT E    HE\nENDTHEENDTHEENDTHEENDTHEENDTHEENDTHEENDTHEEND'
+'60|使用定寬字，一行有45個半形英數，或25個中文，但是中英混合排版還是會跑掉。\n\n瀏覽器不同也可能發生版面問題。',
+'0|                                             \n  >>>>>  >   > >>>>>       >>>>> >   > >>>>  \n  >>>>>  >   > >>>>>       >>>>> >>  > >>>>> \n    >    >   > >           >     >>  > >   > \n    >    >>>>> >>>>>       >>>>> >>> > >   > \n    >    >>>>> >>>>>       >>>>> > >>> >   > \n    >    >   > >           >     >  >> >   > \n    >    >   > >>>>>       >>>>> >  >> >>>>> \n    >    >   > >>>>>       >>>>> >   > >>>>  \n                                             '
 ];
 </script>
 </body>
