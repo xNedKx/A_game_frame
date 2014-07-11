@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Dialog test</title>
+</head>
+<body>
+<script>
+var pointer=0;
+var lines=[];
+function pointerN(go){
+  if(typeof go!='number'){
+    pointer++;
+  }else if(go<lines.length){
+    pointer=go;
+  }else{
+    return false;
+  }
+}
+function Cwait(){
+  hint.style.display='block';
+  hint.style.opacity=0;
+  if(pointer<lines.length){
+    hintBlink();
+    con.onclick=function(){nextC();}
+    con.style.cursor='pointer';
+  }
+}
+function Csing(){
+  hint.style.display='none';
+  hint.bl=false;
+  con.onclick=null;
+  con.style.cursor='default';
+  window.clearTimeout(bl);
+}
+function nextC(){
+  if(pointer<lines.length){
+    line.innerHTML='';
+    show(lines[pointer]);
+  }
+}
+var spd=60;
+function show(str){
+  if(str.length!=0){
+    var str=String(str);
+    if(str.match(/^[\d]*[|]/)){spd=Number(/^[\d]*[|]/.exec(str)[0].slice(0,-1));str=str.replace(/^[\d]*[|]/,'');}
+    Csing();
+    window.setTimeout(
+    function(){
+      line.innerHTML+=str.substr(0,1)=='\n'?'<br>':str.substr(0,1)==' '?'&nbsp;':str.substr(0,1);
+      show(str.substr(1));
+    },spd);
+  }else{
+    pointerN();
+    Cwait();
+  }
+}
+var bl;
+function hintBlink(){
+  if(hint.style.display!='none'){
+    var inte;
+    if(hint.style.opacity!=0){
+      hint.style.opacity=0;inte=500;
+    }else{
+      hint.style.opacity=1;
+      inte=500;
+    }
+   bl=window.setTimeout(hintBlink,inte);
+  }
+}
+window.onload=function(){
+document.body.appendChild((con=document.createElement('div')));
+con.style.width='400px';
+con.style.height='200px';
+con.style.position='relative';
+con.style.backgroundColor='#000';
+con.style.color='#fff';
+con.appendChild((line=document.createElement('div')));
+line.style.width='400px';
+line.style.height='200px';
+line.style.wordBreak='break-all';
+line.style.overflow='hidden';
+line.style.fontFamily='consolas';
+con.appendChild((hint=document.createElement('div')));
+hint.style.width='20px';
+hint.style.height='8px';
+hint.style.position='absolute';
+hint.style.top='192px'
+hint.style.left='380px';
+hint.style.backgroundColor='rgba(255,255,255,0.6)';
+hint.style.display='none';
+
+nextC();
+}
+</script>
+<script>
+lines=[
+'0|歡迎使用對話框測試小程式，請按一下繼續閱讀。',
+'60|目前右下角提示指標速度是0.5秒/0.5秒(顯示/隱藏)',
+'預設文字顯示速度是60ms，一次一個字元。\n每句話可以設定速度，會一直影響，所以要記得設定回原始速度。',
+'對話是回不去的喔～　^.<',
+'對話到最後一句，你按再多次也不會有反應。',
+'換\n行\n測\n試\n......使用\\n會自動轉換為<br>tag。',
+'     空 白  測   試     \n\n半形空白會自動轉變成&nbsp;，所以不會自動縮排。',
+'1|Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n	Lorem ipsum dolor sit amet, consectetur adipisicing',
+'60|速度1ms的狂飆',
+'有設定強制換行，所以英文單字可能會被切斷。\n.\n.\n.\n.\n.\n.\n.\n目前超過10行的字會看不到。',
+'20|The quick brown fox jumps over the lazy dog.',
+'10|AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\nBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\nDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n\nEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE',
+'60|使用定寬字，一行有45個半形英數，或25個中文，但是中英混合排版還是會跑掉。',
+'0|THEENDTHEENDTHEENDTHEENDTHEENDTHEENDTHEENDTHE\nEN     ND HEE D     DTHEEND     D HEE D    ND\nTH     HE NDT E     EENDTHE     E  DT E     E\nENDT EEND HEE D HEENDTHEEND HEEND  EE D HEE D\nTHEE DTHE     E     EENDTHE     E   T E NDT E\nENDT EEND     D     DTHEEND     D H   D HEE D\nTHEE DTHE NDT E NDTHEENDTHE NDTHE ND  E NDT E\nENDT EEND HEE D     DTHEEND     D HE  D     D\nTHEE DTHE NDT E     EENDTHE     E NDT E    HE\nENDTHEENDTHEENDTHEENDTHEENDTHEENDTHEENDTHEEND'
+];
+</script>
+</body>
