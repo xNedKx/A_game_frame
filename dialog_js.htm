@@ -50,7 +50,7 @@ var spd=60;
 function show(str){
   if(str.length!=0){
     var str=String(str);
-    if(str.match(/^[\d]*[|]/)){spd=Number(/^[\d]*[|]/.exec(str)[0].slice(0,-1));str=str.replace(/^[\d]*[|]/,'');}
+    if(str.match(/^[\d]+[|]/)){spd=Number(/^[\d]+[|]/.exec(str)[0].slice(0,-1));str=str.replace(/^[\d]+[|]/,'');}
     Csing();
     window.setTimeout(
     function(){
