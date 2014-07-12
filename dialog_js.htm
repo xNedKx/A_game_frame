@@ -51,6 +51,11 @@ function show(str){
   if(str.length!=0){
     var str=String(str);
     if(str.match(/^[\d]+[|]/)){spd=Number(/^[\d]+[|]/.exec(str)[0].slice(0,-1));str=str.replace(/^[\d]+[|]/,'');}
+    if((imgC=str.match(/^\u0091.*?\u0092/))){
+      str=str.replace(/^\u0091.*?\u0092/,'');
+      url=imgC[0].slice(1,-1).trim();
+      line.style.backgroundImage=url.match(/^(http:\/\/|https:\/\/|\.{0,2}\/).*\.(jpg|gif|png)$/)?'url("'+url+'")':"none";
+    }
     Csing();
     window.setTimeout(
     function(){
@@ -86,9 +91,13 @@ con.style.margin='10px auto';
 con.appendChild((line=document.createElement('div')));
 line.style.width='408px';
 line.style.height='200px';
+line.style.position='absolute';
+line.style.top='0'
+line.style.left='0';
 line.style.wordBreak='break-all';
 line.style.overflow='hidden';
 line.style.fontFamily='consolas';
+line.style.backgroundRepeat='no-repeat';
 con.appendChild((hint=document.createElement('div')));
 hint.style.width='20px';
 hint.style.height='8px';
@@ -97,18 +106,20 @@ hint.style.top='192px'
 hint.style.left='388px';
 hint.style.backgroundColor='rgba(255,255,255,0.6)';
 hint.style.display='none';
+con.appendChild((img=document.createElement('div')));
 
 nextC();
 }
 </script>
 <script>
 lines=[
-'0|歡迎使用對話框測試小程式，請按一下繼續閱讀。',
-'60|目前右下角提示指標速度是0.5秒/0.5秒(顯示/隱藏)',
-'預設文字顯示速度是60ms，一次一個字元。\n每句話可以設定速度，會一直影響，所以要記得設定回原始速度。',
+'0|歡迎使用對話框測試小程式，請按一下繼續閱讀。60|',
+'目前右下角提示指標速度是0.5秒/0.5秒(顯示/隱藏)',
+'預設文字顯示速度是60ms，一次一個字元。\n請使用[數字]|設定速度(如60\u0000|)，速度不會自動恢復，改變之後記得要再設定。',
 '對話是回不去的喔～　^.<',
 '對話到最後一句，你按再多次也不會有反應。',
-'換\n行\n測\n試\n......使用\\n會自動轉換為<br>tag。',
+'圖片測試...\n\n\n\n\u0091 https://www.google.com.tw/images/srpr/logo11w.png \u0092\n\n\n\nGOOGLE!',
+'\u0091\u0092換\n行\n測\n試\n......使用\\n會自動轉換為<br>tag。',
 '     空 白  測   試     \n\n半形空白會自動轉變成&nbsp;，所以不會自動縮排。',
 '1|Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n	Lorem ipsum dolor sit amet, consectetur adipisicing',
 '60|速度1ms的狂飆',
