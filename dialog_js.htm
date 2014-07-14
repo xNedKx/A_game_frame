@@ -24,79 +24,43 @@ function pointerN(go){
   }else{
     return false;
   }
-}
+}//設定劇情指標位置
 function Cwait(){
+  skip=false;
   hint.style.display='block';
   hint.style.opacity=0;
   if(pointer<lines.length){
     hintBlink();
-    con.onclick=function(){nextC();}
-    con.style.cursor='pointer';
-  }
-}
-function Csing(){
-  hint.style.display='none';
-  con.onclick=null;
-  con.style.cursor='default';
-  window.clearTimeout(bl);
-}
-function nextC(){
-  if(pointer<lines.length){
-    while(line.firstChild){line.removeChild(line.firstChild);}
-    show(lines[pointer],line);
-  }
-}
-var spd=60;
-var con,line,hint;
-function show(str,DOM){
-  if(str.length!=0){
-    var str=String(str);
-    if(str.match(/^[\d]+[|]/)){spd=Number(/^[\d]+[|]/.exec(str)[0].slice(0,-1));str=str.replace(/^[\d]+[|]/,'');}
-    if((args=str.match(/^\u0091.*?\u0092/))){
-      args=args[0].slice(1,-1).split('\u001d');
-      str=str.replace(/^\u0091.*?\u0092/,'');
-      for(a in args){
-        if(args[a]==''){continue;}
-        cmd=args[a].split('\u001e');
-        switch((cmd[0]=cmd[0].trim())){
-        case 'img':
-        line.style.backgroundImage=(typeof(cmd[1])=='string'&&(cmd[1]=cmd[1].trim()).match(/^(http:\/\/|https:\/\/|\.{0,2}\/).*\.(jpg|gif|png)$/))?'url("'+cmd[1]+'")':"none";
-        break;
+    if(!sel){
+      con.onclick=function(){nextC();}
+      con.style.cursor='pointer';
+    }else{
+      con.onclick=null;
+      sels=line.getElementsByTagName('a');
+      for(op=0;op<sels.length;op++){
+        if(sels[op].hasAttribute('gt')){
+          sels[op].onmouseup=function(){pointerN(Number(this.getAttribute('gt')));nextC();};
+          sels[op].onmouseover=function(){this.style.backgroundColor='rgba(255,255,255,0.4)';};
+          sels[op].onmouseout=function(){this.style.backgroundColor='rgba(0,0,0,0)';};
         }
       }
     }
-    if((tag=str.match(/^<(a|div|span).*?>(.|\n)*<\/\1>/m))){
-      DOM.appendChild((tmp=document.createElement(tag[1])));
-      tag[0]=tag[0].match(/^<(a|div|span).*?>/)[0].match(/style=('|").*?\1/);
-      if(tag[0]){tmp.style.cssText=tag[0][0].slice(7,-1);}
-      DOM=tmp;
-      str=removeTag(str,tag[1]);
-    }
-    if(str.match(/^\u001b/)){
-      DOM=DOM.parentNode;
-    }
-    Csing();
-    window.setTimeout(
-    function(){
-      switch(str.substr(0,1)){
-      case '\u001b':
-      break;
-      case '\n':
-        DOM.innerHTML+='<br>';
-      break;
-      case ' ':
-        DOM.innerHTML+='&nbsp;';
-      break;
-      default:
-        DOM.innerHTML+=str.substr(0,1);
-      }
-      show(str.substr(1),DOM);
-    },spd);
-  }else{
-    pointerN();
-    Cwait();
   }
-}
+}//顯示完畢，等待輸入
+function Csing(){
+  hint.style.display='none';
+  con.onclick=function(){skip=true;};
+  con.style.cursor='default';
+  window.clearTimeout(bl);
+}//顯示中
+function nextC(){
+  if(pointer<lines.length){
+    sel=false;
+    while(line.firstChild){line.removeChild(line.firstChild);}
+    spd=[dspd];
+    show(lines[pointer],line);
+  }
+}//載入劇情指標位置的劇情
 var bl;
 function hintBlink(){
   if(hint.style.display!='none'){
@@ -109,16 +73,98 @@ function hintBlink(){
     }
    bl=window.setTimeout(hintBlink,inte);
   }
-}
-function removeTag(str,tag){
+}//閃閃顯示
+function removeTag(str,tag,sub){
   var count=0;
   str=str.replace(RegExp('^<'+tag+'.*?>'),'');
   for(cc=0;cc<str.length;cc++){
-    if(str.substr(cc).match(RegExp('^\</'+tag+'>'))){
+    if(str.substr(cc).match(RegExp('^</'+tag+'>'))){
       if(count==0){break;}else{count--;}
-    }else if(str.substr(cc).match(RegExp('^\<'+tag+'>'))){count++;}
+    }else if(str.substr(cc).match(RegExp('^<'+tag+'>'))){count++;}
   }
-  return str.substr(0,cc)+'\u001b'+str.substr(cc+(('</'+tag+'>').length));
+  return str.substr(0,cc)+sub+str.substr(cc+(('</'+tag+'>').length));
+}//清除TAG，在結束位置留下標記
+var dspd=60;
+var spd=[dspd];
+var skip=false;
+var sel=false;
+var con,line,hint;
+function show(str,DOM){
+  if(str.length!=0){
+    var str=String(str);
+    if(str.match(/^[\d]+[|]/)){
+      spd.push(Number(/^[\d]+[|]/.exec(str)[0].slice(0,-1)));
+      str=str.replace(/^[\d]+[|]/,'');
+    }//60|改變速度
+    if((tag=str.match(/^<spd=(\d+)\s*\/?>/))){
+      str=str.replace(/^<spd=\d+\s*\/?>/,'');
+      spd.push(Number(tag[1]));
+    }//<spd=60 />改變速度
+    if((args=str.match(/^\u0091.*?\u0092/))){
+      args=args[0].slice(1,-1).split('\u001d');
+      str=str.replace(/^\u0091.*?\u0092/,'');
+      for(a in args){
+        if(args[a]==''){continue;}
+        cmd=args[a].split('\u001e');
+        switch((cmd[0]=cmd[0].trim())){
+        case 'img':
+        line.style.backgroundImage=(typeof(cmd[1])=='string'&&(cmd[1]=cmd[1].trim()).match(/^(http:\/\/|https:\/\/|\.{0,2}\/).*\.(jpg|gif|png)$/))?'url("'+cmd[1]+'")':"none";
+        break;
+        }
+      }
+    }//\u0091 img \u001e http://url \u001d ??? \u0092 顯示圖片/???指令
+    if((tag=str.match(/^<(a|div|span).*?>(.|\n)*<\/\1>/))){
+      DOM.appendChild((tmp=document.createElement(tag[1])));
+      css=tag[0].match(/^<(a|div|span).*?>/)[0].match(/style=('|").*?\1/);
+      if(css){
+        tmp.style.cssText=css[0].slice(7,-1);
+      }
+      if((gt=tag[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
+        if((gtt=gt[1].match(/gt=(\d+)/))){
+          if(Number(gtt[1])<lines.length){
+            sel=true;
+            tmp.setAttribute('gt',Number(gtt[1]));
+            tmp.style.cursor='pointer';
+          }
+        }else if(gt[1].match('gt')){
+            sel=true;
+            tmp.setAttribute('gt',pointer+1);
+            tmp.style.cursor='pointer';
+        }
+      }
+      sp=tag[0].match(/^<(a|div|span).*?>/)[0].match(/spd=\d+/);
+      if(sp){
+        spd.push(Number(sp[0].substr(4)));
+        str=removeTag(str,tag[1],'\u001a');
+      }else{
+        str=removeTag(str,tag[1],'\u001b');
+      }
+      DOM=tmp;
+    }//允許 a|div|span 標籤，style、gt跟spd屬性
+    Csing();
+    window.setTimeout(
+    function(){
+      switch(str.substr(0,1)){
+      case '\u001a': //先恢復速度
+        spd.pop();
+      case '\u001b': //再脫離TAG
+        DOM=DOM.parentNode;
+      break;
+      case '\n': //用<br>換行
+        DOM.innerHTML+='<br>';
+      break;
+      case ' ': //用&nbsp;保持連續空白
+        DOM.innerHTML+='&nbsp;';
+      break;
+      default: //正常讀出字元
+        DOM.innerHTML+=str.substr(0,1);
+      }//依讀入字元反應
+      show(str.substr(1),DOM);
+    },skip?0:spd[spd.length-1]);
+  }else{
+    pointerN();
+    Cwait();
+  }
 }
 window.onload=function(){
 document.body.appendChild((con=document.createElement('div')));
@@ -153,20 +199,21 @@ nextC();
 </script>
 <script>
 lines=[
-'0|歡迎使用對話框測試小程式，請<span style="font-weight:bold;color:#F00">按一下</span>繼續閱讀。60|',
+'<spd=1/>歡迎使用對話框測試小程式，請<span style="font-weight:bold;color:#F00" spd=300>按一下</span>繼續閱讀。',
 '目前右下角提示指標速度是0.5秒/0.5秒(顯示/隱藏)',
-'預設文字顯示速度是60ms，一次一個字元。\n請使用[數字]|設定速度(如60\u0000|)，速度不會自動恢復，改變之後記得要再設定。',
+'預設文字顯示速度是60ms，一次一個字元。\n可使用<\u0000spd=0>或<\u0000span spd=60>變速文字<\u0000/span>設定速度，每次對話都會恢復。顯示中點一下會加速到全顯。',
 '對話是回不去的喔～　^.<',
 '對話到最後一句，你按再多次也不會有反應。',
 '圖片測試...\n\n\n\n\n\u0091 img\u001ehttps://www.google.com.tw/images/srpr/logo11w.png \u0092\n\n\nGOOGLE!',
 '\u0091img\u0092換\n行\n測\n試\n......使用\\n會自動轉換為<br>tag。',
 '     空 白  測   試     \n\n半形空白會自動轉變成&nbsp;，所以不會自動縮排。',
 '1|Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n	Lorem ipsum dolor sit amet, consectetur adipisicing',
-'60|速度1ms的狂飆',
+'速度1ms的狂飆',
 '有設定強制換行，所以英文單字可能會被切斷。\n.\n.\n.\n.\n.\n.\n.\n目前超過10行的字會看不到。',
 '20|The quick brown fox jumps over the lazy dog.',
+'連結測試...\n\n<a gt=0>選項一 回到開頭</a>\n\n\n<a gt>下一頁...</a>',
 '10|AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\nBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\nDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n\nEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE',
-'60|使用定寬字，一行有45個半形英數，或25個中文，但是中英混合排版還是會跑掉。\n\n瀏覽器不同也可能發生版面問題。',
+'使用定寬字，一行有45個半形英數，或25個中文，但是中英混合排版還是會跑掉。\n\n瀏覽器不同也可能發生版面問題。',
 '0|<span style="color:rgb(200,200,200);">                                             \n  >>>>>  >   > >>>>>       >>>>> >   > >>>>  \n  >>>>>  >   > >>>>>       >>>>> >>  > >>>>> \n    >    >   > >           >     >>  > >   > \n    >    >>>>> >>>>>       >>>>> >>> > >   > \n    >    >>>>> >>>>>       >>>>> > >>> >   > \n    >    >   > >           >     >  >> >   > \n    >    >   > >>>>>       >>>>> >  >> >>>>> \n    >    >   > >>>>>       >>>>> >   > >>>>  \n                                             </span>'
 ];
 </script>
