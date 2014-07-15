@@ -45,14 +45,8 @@ function Cwait(){
   skip=false;
   hint.style.display='block';
   hint.style.opacity=0;
-  if(!sel){
-    if(pointer<lines.length){
-      hintBlink();
-      con.onclick=function(){nextC();}
-      con.style.cursor='pointer';
-      preloadImg(pointer);
-    }
-  }else{
+  if(sel){
+    nextA=false;
     con.onclick=null;
     hintBlink();
     sels=con.getElementsByClassName('gt');
@@ -65,6 +59,13 @@ function Cwait(){
         sels[op].removeAttribute('gt');
         preloadImg(sels[op].gt);
       }
+    }
+  }else{
+    if(pointer<lines.length){
+      hintBlink();
+      con.onclick=function(){nextC();}
+      con.style.cursor='pointer';
+      preloadImg(pointer);
     }
   }
 }//顯示完畢，等待輸入
@@ -80,6 +81,7 @@ function nextC(){
     while(line.firstChild){line.removeChild(line.firstChild);}
     while(img.firstChild){img.removeChild(img.firstChild);}
     spd=[dspd];
+    nextA=false;
     show(lines[pointer],line);
   }
 }//載入劇情指標位置的劇情
@@ -161,15 +163,22 @@ function preloadImg(pt){
 var dspd=100;
 var spd=[dspd];
 var skip=false;
+var nextA=false;
 var sel=false;
 var con,line,hint;
 var sT='\u001a';
 var tT='\u001b';
 function show(str,DOM){
-  if(str.length!=0){
+  if(str.length>0){
     str=str.toString();
-    while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color)(.*?)>/))){
+    while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next)(.*?)>/))){
       switch(tag[1]){
+      case 'next':
+        sp=tag[2].match(/\sspd=(\d+)(\s*|$)/);
+        if(sp){spd.push(Number(sp[1]));}
+        str=str.replace(/^<next.*?>/,'');
+        nextA=true;
+      break;
       case 'spd':
         if((sp=tag[2].match(/^=(\d+)\s*\/?$/))){
           str=str.replace(/^<spd=\d+\s*\/?>/,'');
@@ -255,9 +264,9 @@ function show(str,DOM){
         if((gt=tag[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
           tmp=addGt(gt[1],tmp);
         }
-        sp=tag[0].match(/^<(a|div|span|p).*?>/)[0].match(/spd=\d+/);
+        sp=tag[0].match(/^<(a|div|span|p).*?>/)[0].match(/spd=(\d+)(\s*|$)/);
         if(sp){
-          spd.push(Number(sp[0].substr(4)));
+          spd.push(Number(sp[1]));
           str=removeTag(str,tag[1],sT);
         }else{
           str=removeTag(str,tag[1],tT);
@@ -271,26 +280,33 @@ function show(str,DOM){
     }//處理標籤跟屬性
     Csing();
     window.setTimeout(function(){
-      switch(str.substr(0,1)){
-      case sT: //先恢復速度
-        spd.pop();
-      case tT: //再脫離TAG
-        DOM=DOM.parentNode;
-      break;
-      case '\n': //用<br>換行
-        DOM.innerHTML+='<br>';
-      break;
-      case ' ': //用&nbsp;保持連續空白
-        DOM.innerHTML+='&nbsp;';
-      break;
-      default: //正常讀出字元
-        DOM.innerHTML+=str.substr(0,1);
-      }//依讀入字元反應
-      show(str.substr(1),DOM);
+      if(str.length>0){
+        switch(str.substr(0,1)){
+        case sT: //先恢復速度
+          spd.pop();
+        case tT: //再脫離TAG
+          DOM=DOM.parentNode;
+        break;
+        case '\n': //用<br>換行
+          DOM.innerHTML+='<br>';
+        break;
+        case ' ': //用&nbsp;保持連續空白
+          DOM.innerHTML+='&nbsp;';
+        break;
+        default: //正常讀出字元
+          DOM.innerHTML+=str.substr(0,1);
+        }//依讀入字元反應
+        show(str.substr(1),DOM);
+      }else{
+        pointerN();
+        Cwait();
+        if(nextA){nextC();}
+      }
     },skip?0:spd[spd.length-1]);
   }else{
     pointerN();
     Cwait();
+    if(nextA){nextC();}
   }
 }
 window.onload=function(){
