@@ -241,16 +241,16 @@ function show(str,DOM){
       case 'a':
       case 'div':
       case 'span':
-        if(tag=str.match(/^<(a|div|span).*?>(.|\n)*<\/\1>/)){
+        if(tag=str.match(/^<(a|div|span|p).*?>(.|\n)*<\/\1>/)){
         DOM.appendChild((tmp=document.createElement(tag[1])));
-        css=tag[0].match(/^<(a|div|span).*?>/)[0].match(/style=('|").*?\1/);
+        css=tag[0].match(/^<(a|div|span|p).*?>/)[0].match(/style=('|").*?\1/);
         if(css){
           tmp.style.cssText=css[0].slice(7,-1);
         }
         if((gt=tag[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
           tmp=addGt(gt[1],tmp);
         }
-        sp=tag[0].match(/^<(a|div|span).*?>/)[0].match(/spd=\d+/);
+        sp=tag[0].match(/^<(a|div|span|p).*?>/)[0].match(/spd=\d+/);
         if(sp){
           spd.push(Number(sp[0].substr(4)));
           str=removeTag(str,tag[1],sT);
@@ -325,7 +325,8 @@ hint.style.height='16px';
 hint.style.position='absolute';
 hint.style.top='584px'
 hint.style.left='784px';
-hint.style.backgroundColor='rgba(0,0,0,0.4)';
+hint.style.backgroundColor='rgba(0,0,0,0.8)';
+line.style.zIndex='19999';
 hint.style.display='none';
 
 nextC();
