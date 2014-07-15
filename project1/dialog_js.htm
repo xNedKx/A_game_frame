@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Dialog DEMO</title>
+<style>
+body{
+padding:0
+;margin:0;
+font-size:16px;
+align-center;
+}
+</style>
+</head>
+<body>
+<script>
+function loadData(url){
+  if(url){
+    scriptLoad=document.createElement('script');
+    scriptLoad.onload=function(){
+      this.parentNode.removeChild(this);
+    }
+    scriptLoad.src=url;
+    document.body.appendChild(scriptLoad);
+  }
+}
+var pointer=0;
+var lines=[];
+function pointerN(go){
+  if(typeof go!='number'){
+    pointer++;
+  }else if(go<lines.length&&go>=0){
+    pointer=go;
+  }else if(go<0&&lines.length+go-1>=0){
+    pointer=lines.length+go-1;
+  }else{
+    return false;
+  }
+  return true;
+}//設定劇情指標位置
+function Cwait(){
+  skip=false;
+  hint.style.display='block';
+  hint.style.opacity=0;
+  if(!sel){
+    if(pointer<lines.length){
+      hintBlink();
+        con.onclick=function(){nextC();}
+        con.style.cursor='pointer';
+        preloadImg(pointer);
+    }
+  }else{
+    con.onclick=null;
+    sels=con.getElementsByClassName('gt');
+    for(op=0;op<sels.length;op++){
+      if(sels[op].hasAttribute('gt')){
+        sels[op].gt=Number(sels[op].getAttribute('gt'));
+        sels[op].onmouseup=function(){if(pointerN(this.gt)){nextC();}};
+        sels[op].onmouseover=function(){this.style.backgroundColor='rgba(255,255,255,0.4)';};
+        sels[op].onmouseout=function(){this.style.backgroundColor='rgba(0,0,0,0)';};
+        sels[op].removeAttribute('gt');
+        preloadImg(sels[op].gt);
+      }
+    }
+  }
+}//顯示完畢，等待輸入
+function Csing(){
+  hint.style.display='none';
+  con.onclick=function(){skip=true;};
+  con.style.cursor='default';
+  window.clearTimeout(bl);
+}//顯示中
+function nextC(){
+  if(pointer<lines.length){
+    sel=false;
+    while(line.firstChild){line.removeChild(line.firstChild);}
+    while(img.firstChild){img.removeChild(img.firstChild);}
+    spd=[dspd];
+    show(lines[pointer],line);
+  }
+}//載入劇情指標位置的劇情
+var bl;
+function hintBlink(){
+  if(hint.style.display!='none'){
+    var inte;
+    if(hint.style.opacity!=0){
+      hint.style.opacity=0;inte=500;
+    }else{
+      hint.style.opacity=1;
+      inte=500;
+    }
+   bl=window.setTimeout(hintBlink,inte);
+  }
+}//閃閃顯示
+function removeTag(str,tag,sub){
+  var count=0;
+  str=str.replace(RegExp('^<'+tag+'.*?>'),'');
+  for(cc=0;cc<str.length;cc++){
+    if(str.substr(cc).match(RegExp('^</'+tag+'>'))){
+      if(count==0){break;}else{count--;}
+    }else if(str.substr(cc).match(RegExp('^<'+tag+'>'))){count++;}
+  }
+  return str.substr(0,cc)+sub+str.substr(cc+(('</'+tag+'>').length));
+}//清除TAG，在結束位置留下標記
+function addGt(str,dom){
+  if((gt=str.match(/\sgt(=(-?\d+))?(\s|$)/))){
+    if(gt[2]){
+      if(gt[2].substr(0,1)=='-'){gtn=lines.length+Number(gt[2])-1;}else{gtn=Number(gt[2]);}
+      sel=true;
+      dom.setAttribute('gt',gtn);
+      dom.className+=' gt';
+      dom.style.cursor='pointer';
+    }else{
+      sel=true;
+      dom.setAttribute('gt',pointer+1);
+      dom.className+=' gt';
+      dom.style.cursor='pointer';
+    }
+  }
+  return dom;
+}//如果attribute有gt，就設定連結
+var imgPL=[];
+function preloadImg(pt){
+  pl=lines[pt];
+  while((r1=pl.match(/(<img.*?src=('|").*?\2.*?>|<bg=('|").*?\3.*?>)/))){
+    dup=false;
+    if(r1[0].substr(1,1)=='i'){
+      if((r2=r1[0].match(/(\s|"|')src=('|")(.*?)\2/))){
+        for(i=0;i<imgPL.length;i++){
+          if(imgPL[i].src==r2[3]){
+            dup=true;
+            break;
+          }
+        }
+        if(!dup){
+          imgPL.push((ipl=new Image()));
+          ipl.src=r2[3];
+        }
+      }
+    }else if(r1[0].substr(1,1)=='b'){
+      if((r2=r1[0].match(/^<bg=('|")(.*?)\1/))){
+        for(i=0;i<imgPL.length;i++){
+          if(imgPL[i].src==r2[2]){
+            dup=true;
+            break;
+          }
+        }
+        if(!dup&&r2[2]!=''){
+          imgPL.push((ipl=new Image()));
+          ipl.src=r2[2];
+        }
+      }
+    }
+    pl=pl.replace(/(<img.*?src=('|").*?\2.*?>|<bg=('|").*?\3.*?>)/,'');
+  }
+}//預先載入圖片
+var dspd=100;
+var spd=[dspd];
+var skip=false;
+var sel=false;
+var con,line,hint;
+var sT='\u001a';
+var tT='\u001b';
+function show(str,DOM){
+  if(str.length!=0){
+    str=str.toString();
+    while((tag=str.match(/^<(a|div|span|img|spd|bg|color)(.*?)>/))){
+      switch(tag[1]){
+      case 'spd':
+        if((sp=tag[2].match(/^=(\d+)\s*\/?$/))){
+          str=str.replace(/^<spd=\d+\s*\/?>/,'');
+          spd.push(Number(sp[1]));
+        }
+      break;
+      case 'color':
+        if((tc=tag[2].match(/^=('|")(.*?)\1\s*\/?$/))){
+          str=str.replace(/^<color=.*?>/,'');
+          line.style.color=tc[2];
+        }
+      break;
+      case 'bg':
+        if((bg=tag[2].match(/^=('|")(.*?)\1.*?$/))){
+          str=str.replace(/^<bg=('|").*?\1.*?>/,'');
+          url=bg[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
+          if(url){
+            con.style.backgroundImage='url("'+url[0]+'")';
+            if((p=tag[2].match(/\sp=('|")(.*?)\1/))){p=p[2];}
+            if((w=tag[2].match(/\sw=(\d+)(\s|$)/))){w=w[1]+'px';}
+            if((h=tag[2].match(/\sh=(\d+)(\s|$)/))){h=h[1]+'px';}
+          }else{
+            con.style.backgroundImage='none';
+            p='initial'
+            w='';
+            h='';
+          }
+          con.style.backgroundPosition=p;
+          con.style.backgroundSize=w?(h?+" "+h:w+' auto'):(h?'auto '+h:'auto');
+        }
+      break;
+      case 'img':
+        if((imgt=tag[2].match(/\s+src=('|")(.*?)\1/))){
+          str=str.replace(/^<img.*?>/,'');
+          url=imgt[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
+          img.appendChild((tmp=document.createElement('div')));
+          if(url){
+            nimg=new Image();
+            nimg.src=url[0];
+            tmp.appendChild(nimg);
+            tmp.style.overflow='hidden';
+          }
+          tmp.style.position='absolute';
+          if((w=tag[2].match(/\sw=(\d+)(\s|$)/))){
+            tmp.style.width=w[1]+'px';
+            nimg.width=w[1];
+          }
+          if((h=tag[2].match(/\sh=(\d+)(\s|$)/))){
+            tmp.style.height=h[1]+'px';
+            nimg.height=h[1];
+          }
+          if((x=tag[2].match(/\sx=(-?\d+)(\s|$)/))){
+            if(x[1].substr(0,1)=='-'){
+              tmp.style.right=x[1].substr(1)+'px';
+            }else{
+              tmp.style.left=x[1]+'px';
+            }
+          }
+          if((y=tag[2].match(/\sy=(-?\d+)(\s|$)/))){
+            if(y[1].substr(0,1)=='-'){
+              tmp.style.bottom=y[1].substr(1)+'px';
+            }else{
+              tmp.style.top=y[1]+'px';
+            }
+          }
+          css=tag[0].match(/^<img.*?>/)[0].match(/style=('|").*?\1/);
+          if(css){
+            nimg.style.cssText+=css[0].slice(7,-1);
+          }
+         tmp=addGt(tag[2],tmp);
+        }
+      break;
+      case 'a':
+      case 'div':
+      case 'span':
+        if(tag=str.match(/^<(a|div|span).*?>(.|\n)*<\/\1>/)){
+        DOM.appendChild((tmp=document.createElement(tag[1])));
+        css=tag[0].match(/^<(a|div|span).*?>/)[0].match(/style=('|").*?\1/);
+        if(css){
+          tmp.style.cssText=css[0].slice(7,-1);
+        }
+        if((gt=tag[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
+          tmp=addGt(gt[1],tmp);
+        }
+        sp=tag[0].match(/^<(a|div|span).*?>/)[0].match(/spd=\d+/);
+        if(sp){
+          spd.push(Number(sp[0].substr(4)));
+          str=removeTag(str,tag[1],sT);
+        }else{
+          str=removeTag(str,tag[1],tT);
+        }
+        DOM=tmp;
+        }
+        break;
+      }
+    }//處理標籤跟屬性
+    Csing();
+    window.setTimeout(function(){
+      switch(str.substr(0,1)){
+      case sT: //先恢復速度
+        spd.pop();
+      case tT: //再脫離TAG
+        DOM=DOM.parentNode;
+      break;
+      case '\n': //用<br>換行
+        DOM.innerHTML+='<br>';
+      break;
+      case ' ': //用&nbsp;保持連續空白
+        DOM.innerHTML+='&nbsp;';
+      break;
+      default: //正常讀出字元
+        DOM.innerHTML+=str.substr(0,1);
+      }//依讀入字元反應
+      show(str.substr(1),DOM);
+    },skip?0:spd[spd.length-1]);
+  }else{
+    pointerN();
+    Cwait();
+  }
+}
+window.onload=function(){
+document.body.appendChild((con=document.createElement('div')));
+con.style.width='800px';
+con.style.height='600px';
+con.style.position='relative';
+con.style.backgroundColor='#000';
+con.style.color='#333';
+con.style.margin='10px auto';
+con.style.overflow='hidden';
+con.style.backgroundRepeat='no-repeat';
+con.style.fontFamily='consolas';
+con.style.fontSize="18px"
+con.appendChild((img=document.createElement('div')));
+img.style.width='800px';
+img.style.height='600px';
+img.style.position='absolute';
+img.style.top='0';
+img.style.left='0';
+img.style.overflow='hidden';
+img.onmousedown=function(e){e.preventDefault();}
+con.appendChild((line=document.createElement('div')));
+line.style.width='760px';
+line.style.height='158px';
+line.style.position='absolute';
+line.style.top='420px'
+line.style.left='0';
+line.style.borderTop='2px ridge rgba(255,255,255,0.9)';
+line.style.backgroundColor='rgba(255,255,255,0.8)';
+line.style.wordBreak='break-all';
+line.style.overflow='hidden';
+line.style.padding='10px 20px';
+line.style.zIndex='9999';
+line.onmousedown=function(e){e.preventDefault();}
+con.appendChild((hint=document.createElement('div')));
+hint.style.width='16px';
+hint.style.height='16px';
+hint.style.position='absolute';
+hint.style.top='584px'
+hint.style.left='784px';
+hint.style.backgroundColor='rgba(0,0,0,0.4)';
+hint.style.display='none';
+
+nextC();
+}
+</script>
+<script>
+loadData('./lines.js');
+</script>
+</body>
