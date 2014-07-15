@@ -19,11 +19,14 @@ var lines=[];
 function pointerN(go){
   if(typeof go!='number'){
     pointer++;
-  }else if(go<lines.length){
+  }else if(go<lines.length&&go>=0){
     pointer=go;
+  }else if(go<0&&lines.length+go-1>=0){
+    pointer=lines.length+go-1;
   }else{
     return false;
   }
+  return true;
 }//設定劇情指標位置
 function Cwait(){
   skip=false;
@@ -34,14 +37,18 @@ function Cwait(){
     if(!sel){
       con.onclick=function(){nextC();}
       con.style.cursor='pointer';
+      preloadImg(pointer);
     }else{
       con.onclick=null;
-      sels=line.getElementsByTagName('a');
+      sels=con.getElementsByClassName('gt');
       for(op=0;op<sels.length;op++){
         if(sels[op].hasAttribute('gt')){
-          sels[op].onmouseup=function(){pointerN(Number(this.getAttribute('gt')));nextC();};
+          sels[op].gt=Number(sels[op].getAttribute('gt'));
+          sels[op].onmouseup=function(){if(pointerN(this.gt)){nextC();}};
           sels[op].onmouseover=function(){this.style.backgroundColor='rgba(255,255,255,0.4)';};
           sels[op].onmouseout=function(){this.style.backgroundColor='rgba(0,0,0,0)';};
+          sels[op].removeAttribute('gt');
+          preloadImg(sels[op].gt);
         }
       }
     }
@@ -57,6 +64,7 @@ function nextC(){
   if(pointer<lines.length){
     sel=false;
     while(line.firstChild){line.removeChild(line.firstChild);}
+    while(img.firstChild){img.removeChild(img.firstChild);}
     spd=[dspd];
     show(lines[pointer],line);
   }
@@ -84,70 +92,161 @@ function removeTag(str,tag,sub){
   }
   return str.substr(0,cc)+sub+str.substr(cc+(('</'+tag+'>').length));
 }//清除TAG，在結束位置留下標記
+function addGt(str,dom){
+  if((gt=str.match(/\sgt(=(-?\d+))?(\s|$)/))){
+    if(gt[2]){
+      if(gt[2].substr(0,1)=='-'){gtn=lines.length+Number(gt[2])-1;}else{gtn=Number(gt[2]);}
+      sel=true;
+      dom.setAttribute('gt',gtn);
+      dom.className+=' gt';
+      dom.style.cursor='pointer';
+    }else{
+      sel=true;
+      dom.setAttribute('gt',pointer+1);
+      dom.className+=' gt';
+      dom.style.cursor='pointer';
+    }
+  }
+  return dom;
+}//如果attribute有gt，就設定連結
+var imgPL=[];
+function preloadImg(pt){
+  pl=lines[pt];
+  while((r1=pl.match(/(<img.*?src=('|").*?\2.*?>|<bg=('|").*?\3.*?>)/))){
+    dup=false;
+    if(r1[0].substr(1,1)=='i'){
+      if((r2=r1[0].match(/(\s|"|')src=('|")(.*?)\2/))){
+        for(i=0;i<imgPL.length;i++){
+          if(imgPL[i].src==r2[3]){
+            dup=true;
+            break;
+          }
+        }
+        if(!dup){
+          imgPL.push((ipl=new Image()));
+          ipl.src=r2[3];
+        }
+      }
+    }else if(r1[0].substr(1,1)=='b'){
+      if((r2=r1[0].match(/^<bg=('|")(.*?)\1/))){
+        for(i=0;i<imgPL.length;i++){
+          if(imgPL[i].src==r2[2]){
+            dup=true;
+            break;
+          }
+        }
+        if(!dup&&r2[2]!=''){
+          imgPL.push((ipl=new Image()));
+          ipl.src=r2[2];
+        }
+      }
+    }
+    pl=pl.replace(/(<img.*?src=('|").*?\2.*?>|<bg=('|").*?\3.*?>)/,'');
+  }
+}//
 var dspd=60;
 var spd=[dspd];
 var skip=false;
 var sel=false;
 var con,line,hint;
+var sT='\u001a';
+var tT='\u001b';
 function show(str,DOM){
   if(str.length!=0){
-    var str=String(str);
-    if(str.match(/^[\d]+[|]/)){
-      spd.push(Number(/^[\d]+[|]/.exec(str)[0].slice(0,-1)));
-      str=str.replace(/^[\d]+[|]/,'');
-    }//60|改變速度
-    if((tag=str.match(/^<spd=(\d+)\s*\/?>/))){
-      str=str.replace(/^<spd=\d+\s*\/?>/,'');
-      spd.push(Number(tag[1]));
-    }//<spd=60 />改變速度
-    if((args=str.match(/^\u0091.*?\u0092/))){
-      args=args[0].slice(1,-1).split('\u001d');
-      str=str.replace(/^\u0091.*?\u0092/,'');
-      for(a in args){
-        if(args[a]==''){continue;}
-        cmd=args[a].split('\u001e');
-        switch((cmd[0]=cmd[0].trim())){
-        case 'img':
-        line.style.backgroundImage=(typeof(cmd[1])=='string'&&(cmd[1]=cmd[1].trim()).match(/^(http:\/\/|https:\/\/|\.{0,2}\/).*\.(jpg|gif|png)$/))?'url("'+cmd[1]+'")':"none";
-        break;
+    str=str.toString();
+    while((tag=str.match(/^<(a|div|span|img|spd|bg)(.*?)>/))){
+      switch(tag[1]){
+      case 'spd':
+        if((sp=tag[2].match(/^=(\d+)\s*\/?$/))){
+          str=str.replace(/^<spd=\d+\s*\/?>/,'');
+          spd.push(Number(sp[1]));
         }
-      }
-    }//\u0091 img \u001e http://url \u001d ??? \u0092 顯示圖片/???指令
-    if((tag=str.match(/^<(a|div|span).*?>(.|\n)*<\/\1>/))){
-      DOM.appendChild((tmp=document.createElement(tag[1])));
-      css=tag[0].match(/^<(a|div|span).*?>/)[0].match(/style=('|").*?\1/);
-      if(css){
-        tmp.style.cssText=css[0].slice(7,-1);
-      }
-      if((gt=tag[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
-        if((gtt=gt[1].match(/gt=(\d+)/))){
-          if(Number(gtt[1])<lines.length){
-            sel=true;
-            tmp.setAttribute('gt',Number(gtt[1]));
-            tmp.style.cursor='pointer';
+      break;
+      case 'bg':
+        if((bg=tag[2].match(/^=('|")(.*?)\1.*?$/))){
+          str=str.replace(/^<bg=('|").*?\1.*?>/,'');
+          url=bg[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
+          if(url){
+            con.style.backgroundImage='url("'+url[0]+'")';
+            if((p=tag[2].match(/\s+p=('|")(.*?)\1/))){p=p[2];}
+            if((w=tag[2].match(/\s+w=(\d+)\s*/))){w=w[1]+'px';}
+            if((h=tag[2].match(/\s+h=(\d+)\s*/))){h=h[1]+'px';}
+          }else{
+            con.style.backgroundImage='none';
+            p='initial'
+            w='';
+            h='';
           }
-        }else if(gt[1].match('gt')){
-            sel=true;
-            tmp.setAttribute('gt',pointer+1);
-            tmp.style.cursor='pointer';
+          con.style.backgroundPosition=p;
+          con.style.backgroundSize=w?w+' '+h:'';
         }
+      break;
+      case 'img':
+        if((imgt=tag[2].match(/\s+src=('|")(.*?)\1/))){
+          str=str.replace(/^<img.*?>/,'');
+          url=imgt[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
+          img.appendChild((tmp=document.createElement('div')));
+          if(url){
+            nimg=new Image();
+            nimg.src=url[0];
+            tmp.appendChild(nimg);
+          }
+          tmp.style.position='absolute';
+          if((w=tag[2].match(/\s+w=(\d+)(\s|$)/))){
+            tmp.style.width=w[1]+'px';
+            nimg.width=w[1];
+          }
+          if((h=tag[2].match(/\s+h=(\d+)(\s|$)/))){
+            tmp.style.height=h[1]+'px';
+            nimg.height=h[1];
+          }
+          if((x=tag[2].match(/\s+x=(-?\d+)(\s|$)/))){
+            if(x[1].substr(0,1)=='-'){
+              tmp.style.right=x[1].substr(1)+'px';
+            }else{
+              tmp.style.left=x[1]+'px';
+            }
+          }
+          if((y=tag[2].match(/\s+y=(-?\d+)(\s|$)/))){
+            if(y[1].substr(0,1)=='-'){
+              tmp.style.bottom=y[1].substr(1)+'px';
+            }else{
+              tmp.style.top=y[1]+'px';
+            }
+          }
+         tmp=addGt(tag[2],tmp);
+        }
+      break;
+      case 'a':
+      case 'div':
+      case 'span':
+        if(tag=str.match(/^<(a|div|span).*?>(.|\n)*<\/\1>/)){
+        DOM.appendChild((tmp=document.createElement(tag[1])));
+        css=tag[0].match(/^<(a|div|span).*?>/)[0].match(/style=('|").*?\1/);
+        if(css){
+          tmp.style.cssText=css[0].slice(7,-1);
+        }
+        if((gt=tag[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
+          tmp=addGt(gt[1],tmp);
+        }
+        sp=tag[0].match(/^<(a|div|span).*?>/)[0].match(/spd=\d+/);
+        if(sp){
+          spd.push(Number(sp[0].substr(4)));
+          str=removeTag(str,tag[1],sT);
+        }else{
+          str=removeTag(str,tag[1],tT);
+        }
+        DOM=tmp;
+        }
+        break;
       }
-      sp=tag[0].match(/^<(a|div|span).*?>/)[0].match(/spd=\d+/);
-      if(sp){
-        spd.push(Number(sp[0].substr(4)));
-        str=removeTag(str,tag[1],'\u001a');
-      }else{
-        str=removeTag(str,tag[1],'\u001b');
-      }
-      DOM=tmp;
-    }//允許 a|div|span 標籤，style、gt跟spd屬性
+    }//處理標籤跟屬性
     Csing();
-    window.setTimeout(
-    function(){
+    window.setTimeout(function(){
       switch(str.substr(0,1)){
-      case '\u001a': //先恢復速度
+      case sT: //先恢復速度
         spd.pop();
-      case '\u001b': //再脫離TAG
+      case tT: //再脫離TAG
         DOM=DOM.parentNode;
       break;
       case '\n': //用<br>換行
@@ -168,53 +267,64 @@ function show(str,DOM){
 }
 window.onload=function(){
 document.body.appendChild((con=document.createElement('div')));
-con.style.width='408px';
-con.style.height='200px';
+con.style.width='800px';
+con.style.height='600px';
 con.style.position='relative';
 con.style.backgroundColor='#000';
 con.style.color='#fff';
 con.style.margin='10px auto';
+con.style.overflow='hidden';
+con.style.backgroundRepeat='no-repeat';
+con.style.fontFamily='consolas';
+con.appendChild((img=document.createElement('div')));
+img.style.width='800px';
+img.style.height='600px';
+img.style.position='absolute';
+img.style.top='0';
+img.style.left='0';
+img.style.overflow='hidden';
+img.onmousedown=function(e){e.preventDefault();}
 con.appendChild((line=document.createElement('div')));
-line.style.width='408px';
-line.style.height='200px';
+line.style.width='800px';
+line.style.height='178px';
 line.style.position='absolute';
-line.style.top='0'
+line.style.top='420px'
 line.style.left='0';
+line.style.borderTop='2px ridge rgba(255,255,255,0.4)';
+line.style.backgroundColor='rgba(255,255,255,0.2)';
 line.style.wordBreak='break-all';
 line.style.overflow='hidden';
-line.style.fontFamily='consolas';
-line.style.backgroundRepeat='no-repeat';
+line.style.zIndex='9999';
+line.onmousedown=function(e){e.preventDefault();}
 con.appendChild((hint=document.createElement('div')));
-hint.style.width='20px';
-hint.style.height='8px';
+hint.style.width='16px';
+hint.style.height='16px';
 hint.style.position='absolute';
-hint.style.top='192px'
-hint.style.left='388px';
-hint.style.backgroundColor='rgba(255,255,255,0.6)';
+hint.style.top='584px'
+hint.style.left='784px';
+hint.style.backgroundColor='rgba(0,0,0,0.4)';
 hint.style.display='none';
-con.appendChild((img=document.createElement('div')));
 
 nextC();
 }
 </script>
 <script>
 lines=[
-'<spd=1/>歡迎使用對話框測試小程式，請<span style="font-weight:bold;color:#F00" spd=300>按一下</span>繼續閱讀。',
+'<spd=1/>歡迎使用對話框測試小程式，請<aa><span style="font-weight:bold;color:#F00" spd=300>按一下</span></a>繼續閱讀。',
 '目前右下角提示指標速度是0.5秒/0.5秒(顯示/隱藏)',
 '預設文字顯示速度是60ms，一次一個字元。\n可使用<\u0000spd=0>或<\u0000span spd=60>變速文字<\u0000/span>設定速度，每次對話都會恢復。顯示中點一下會加速到全顯。',
-'對話是回不去的喔～　^.<',
+'對話是回不去的喔～　^.<\n\n(GOOGLE圖片會到..?)<a gt>\n</a><a gt>NEXT</a><img src="https://www.google.com.tw/images/srpr/logo11w.png" h=100 x=100 y=100 gt=0><img src="https://www.google.com.tw/images/srpr/logo11w.png" w=100 x=500 y=300 gt=-0>',
 '對話到最後一句，你按再多次也不會有反應。',
-'圖片測試...\n\n\n\n\n\u0091 img\u001ehttps://www.google.com.tw/images/srpr/logo11w.png \u0092\n\n\nGOOGLE!',
-'\u0091img\u0092換\n行\n測\n試\n......使用\\n會自動轉換為<br>tag。',
+'圖片測試...\n\n\n\n\n<bg="https://www.google.com.tw/images/srpr/logo11w.png" p="center">\n\n\nGOOGLE!',
+'<bg=""/>換\n行\n測\n試\n......使用\\n會自動轉換為<br>tag。',
 '     空 白  測   試     \n\n半形空白會自動轉變成&nbsp;，所以不會自動縮排。',
-'1|Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n	Lorem ipsum dolor sit amet, consectetur adipisicing',
+'連結測試...\n\n\n<a gt=0>選項一 回到開頭</a>\n<a gt=-0>選項二 到結束</a>\n\n<a gt>下一頁...</a>',
+'<spd=1/>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
 '速度1ms的狂飆',
-'有設定強制換行，所以英文單字可能會被切斷。\n.\n.\n.\n.\n.\n.\n.\n目前超過10行的字會看不到。',
-'20|The quick brown fox jumps over the lazy dog.',
-'連結測試...\n\n<a gt=0>選項一 回到開頭</a>\n\n\n<a gt>下一頁...</a>',
-'10|AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\nBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\nDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n\nEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE',
-'使用定寬字，一行有45個半形英數，或25個中文，但是中英混合排版還是會跑掉。\n\n瀏覽器不同也可能發生版面問題。',
-'0|<span style="color:rgb(200,200,200);">                                             \n  >>>>>  >   > >>>>>       >>>>> >   > >>>>  \n  >>>>>  >   > >>>>>       >>>>> >>  > >>>>> \n    >    >   > >           >     >>  > >   > \n    >    >>>>> >>>>>       >>>>> >>> > >   > \n    >    >>>>> >>>>>       >>>>> > >>> >   > \n    >    >   > >           >     >  >> >   > \n    >    >   > >>>>>       >>>>> >  >> >>>>> \n    >    >   > >>>>>       >>>>> >   > >>>>  \n                                             </span>'
+'<spd=20/>The quick brown fox jumps over the lazy dog.',
+'<spd=10/>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\nBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\nDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n\nEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE',
+'排版還是會依瀏覽器不同改變.. 大概還需要調整。',
+'<span style="color:rgb(200,200,200);" spd=0>                                             \n  >>>>>  >   > >>>>>       >>>>> >   > >>>>  \n  >>>>>  >   > >>>>>       >>>>> >>  > >>>>> \n    >    >   > >           >     >>  > >   > \n    >    >>>>> >>>>>       >>>>> >>> > >   > \n    >    >>>>> >>>>>       >>>>> > >>> >   > \n    >    >   > >           >     >  >> >   > \n    >    >   > >>>>>       >>>>> >  >> >>>>> \n    >    >   > >>>>>       >>>>> >   > >>>>  \n                                             </span>'
 ];
 </script>
 </body>
