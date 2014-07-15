@@ -5,10 +5,13 @@
 <title>Project 1</title>
 <style>
 body{
-padding:0
-;margin:0;
+padding:0;
+margin:0;
 font-size:16px;
 align-center;
+}
+p{
+margin:0.3em 1em;
 }
 </style>
 </head>
@@ -45,12 +48,13 @@ function Cwait(){
   if(!sel){
     if(pointer<lines.length){
       hintBlink();
-        con.onclick=function(){nextC();}
-        con.style.cursor='pointer';
-        preloadImg(pointer);
+      con.onclick=function(){nextC();}
+      con.style.cursor='pointer';
+      preloadImg(pointer);
     }
   }else{
     con.onclick=null;
+    hintBlink();
     sels=con.getElementsByClassName('gt');
     for(op=0;op<sels.length;op++){
       if(sels[op].hasAttribute('gt')){
@@ -164,7 +168,7 @@ var tT='\u001b';
 function show(str,DOM){
   if(str.length!=0){
     str=str.toString();
-    while((tag=str.match(/^<(a|div|span|img|spd|bg|color)(.*?)>/))){
+    while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color)(.*?)>/))){
       switch(tag[1]){
       case 'spd':
         if((sp=tag[2].match(/^=(\d+)\s*\/?$/))){
@@ -241,6 +245,7 @@ function show(str,DOM){
       case 'a':
       case 'div':
       case 'span':
+      case 'p':
         if(tag=str.match(/^<(a|div|span|p).*?>(.|\n)*<\/\1>/)){
         DOM.appendChild((tmp=document.createElement(tag[1])));
         css=tag[0].match(/^<(a|div|span|p).*?>/)[0].match(/style=('|").*?\1/);
@@ -259,7 +264,9 @@ function show(str,DOM){
         }
         DOM=tmp;
         }
-        break;
+      break;
+      default:
+      str=str.replace(/^</,'<\u0000');
       }
     }//處理標籤跟屬性
     Csing();
