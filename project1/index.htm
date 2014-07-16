@@ -83,7 +83,7 @@ function nextC(){
     while(img.firstChild){img.removeChild(img.firstChild);}
     spd=[dspd];
     nextA=false;
-	keepL=false;
+    keepL=false;
     show(lines[pointer],line);
   }
 }//載入劇情指標位置的劇情
@@ -106,7 +106,7 @@ function removeTag(str,tag,sub){
   for(cc=0;cc<str.length;cc++){
     if(str.substr(cc).match(RegExp('^</'+tag+'>'))){
       if(count==0){break;}else{count--;}
-    }else if(str.substr(cc).match(RegExp('^<'+tag+'>'))){count++;}
+    }else if(str.substr(cc).match(RegExp('^<'+tag+'.*?>'))){count++;}
   }
   return str.substr(0,cc)+sub+str.substr(cc+(('</'+tag+'>').length));
 }//清除TAG，在結束位置留下標記
@@ -162,6 +162,133 @@ function preloadImg(pt){
     pl=pl.replace(/(<img.*?src=('|").*?\2.*?>|<bg=('|").*?\3.*?>)/,'');
   }
 }//預先載入圖片
+function setVar(vns,vvs){
+var vvr,vvn;
+  if((vvr=vvs.match(/^(['"])(.*?)\1$/))){//有框框的話
+    if((vvn=vvr[2].match(/^([+*\-\/])(\d*.?\d+)$/))){//運算元開頭的數字串
+    vars[vns]=isNaN(vars[vns])?0:Number(vars[vns]);
+      switch(vvn[1]){
+      case '+':
+        vars[vns]+=Number(vvn[2]);
+      break;
+      case '-':
+        vars[vns]-=Number(vvn[2]);
+      break;
+      case '*':
+        vars[vns]*=Number(vvn[2]);
+      break;
+      case '/':
+        vars[vns]/=Number(vvn[2])!=0?Number(vvn[2]):1;
+      }
+    }else if((vvn=vvr[2].match(/^[+](.*?)$/))){
+      vars[vns]=vars.hasOwnProperty(vns)?vars[vns]+vvn[1]:vvn[1];
+    }else{
+      vars[vns]=vvr[2];
+    }
+  }else if((vvr=vvs.match(/^(.*?)(\s|\/?$)/))){//沒框框的話
+    if((vvn=vvr[1].match(/^([+\-*\/])?(.*?)$/))){
+      switch(vvn[1]){
+      case '+':
+        if(vars.hasOwnProperty(vvn[2])){
+          if(isNaN(vars[vns])){
+            if(isNaN(vars[vvn[2]])){vars[vns]+=vars[vvn[2]];}
+            else{vars[vns]=Number(vars[vvn[2]]);}
+          }else{
+            if(!isNaN(vars[vvn[2]])){vars[vns]+=Number(vars[vvn[2]]);}
+          }
+        }else if(vvn[2].match(/^\d*.?\d+$/)){
+          if(isNaN(vars[vns])){vars[vns]=Number(vvn[2]);}
+          else{vars[vns]+=Number(vvn[2]);}
+        }else{
+          console.log('add vars error.');
+        }
+      break;
+      case '-':
+        if(vars.hasOwnProperty(vvn[2])){
+          if(!isNaN(vars[vvn[2]])){
+            if(!isNaN(vars[vns])){vars[vns]-=Number(vars[vvn[2]]);}
+            else{vars[vns]=-Number(vars[vvn[2]]);}
+          }else{
+            console.log('minus vars error.');
+          }
+        }else if(vvn[2].match(/^\d*.?\d+$/)){
+          if(isNaN(vars[vns])){vars[vns]=-Number(vvn[2]);}
+          else{vars[vns]-=Number(vvn[2]);}
+        }else{
+          console.log('minus vars error.');
+        }
+      break;
+      case '*':
+        if(vars.hasOwnProperty(vvn[2])){
+          if(!isNaN(vars[vvn[2]])){
+            if(!isNaN(vars[vns])){vars[vns]*=Number(vars[vvn[2]]);}
+            else{vars[vns]=0;}
+          }else{
+            console.log('multiply vars error.');
+          }
+        }else if(vvn[2].match(/^\d*.?\d+$/)){
+          if(!isNaN(vars[vns])){vars[vns]*=Number(vvn[2]);}
+          else{console.log('multiply vars error.');}
+        }else{
+          console.log('multiply vars error.');
+        }
+      break;
+      case '/':
+        if(vars.hasOwnProperty(vvn[2])){
+          if(!isNaN(vars[vvn[2]])){
+            if(!isNaN(vars[vns])){
+              vars[vns]/=Number(vars[vvn[2]])==0?1:Number(vars[vvn[2]]);
+            }else{
+              vars[vns]=0;
+            }
+          }else{
+            console.log('devide vars error.');
+          }
+        }else if(vvn[2].match(/^\d*.?\d+$/)){
+          if(!isNaN(vars[vns])){
+            vars[vns]/=Number(vvn[2])==0?1:Number(vvn[2]);
+          }else{
+            console.log('devide vars error.');
+          }
+        }else{
+          console.log('devide vars error.');
+        }
+      break;
+      default:
+        if(vars.hasOwnProperty(vvn[2])){vars[vns]=vars[vvn[2]];}
+        else if(vvn[2].match(/^\d*.?\d+$/)){vars[vns]=Number(vvn[2]);}
+        else{console.log('set vars error.');}
+      }
+    }
+  }
+}
+function condition(n,c,v){//c:M|L|E
+  if(vars.hasOwnProperty(n)){
+    switch(c){
+    case 'E':
+      if(vars[n]==v){return true;}else{return false;}
+    break;
+    case 'M':
+      if(!isNaN(vars[n])&&!isNaN(v)&&vars[n]>v){return true;}else{return false;}
+    break
+    case 'L':
+      if(!isNaN(vars[n])&&!isNaN(v)&&vars[n]<v){return true;}else{return false;}
+    break;
+    case 'ME':
+    case 'EM':
+      if(!isNaN(vars[n])&&!isNaN(v)&&vars[n]>=v){return true;}else{return false;}
+    break;
+    case 'LE':
+    case 'EL':
+      if(!isNaN(vars[n])&&!isNaN(v)&&vars[n]<=v){return true;}else{return false;}
+    break;
+    default:
+      return false;
+    }
+  }else{
+    return false;
+  }
+}
 var dspd=100;
 var spd=[dspd];
 var skip=false;
@@ -172,22 +299,24 @@ var sel=false;
 var con,line,hint;
 var sT='\u001a';
 var tT='\u001b';
+var ifEnd='\u001c';
 function show(str,DOM){
+  var tag,sp,ne,tc,bg,url,p,w,h,x,y,imgt,nimg,tmp,css,cls,vn,vv,ivn,ic,iv,igt,ir,vs;
   if(str.length>0){
     str=str.toString();
-    while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next|keep)(.*?)>/))){
+    while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next|keep|var|if)(\s+[^\s]+.*?|=.*?|\/?)>/))){
       switch(tag[1]){
       case 'next':
-        sp=tag[2].match(/\sspd=(\d+)(\s|\/|$)/);
+        sp=tag[2].match(/\sspd=(\d+)(\s|\/?$)/);
         if(sp){spd.push(Number(sp[1]));}
-	    if((ne=tag[2].match(/^=(\d+)(\s|\/|$)/))){nextP=Number(ne[1]);}
+        if((ne=tag[2].match(/^=(\d+)(\s|\/?$)/))){nextP=parseInt(ne[1]);}
         str=str.replace(/^<next.*?>/,'');
         nextA=true;
       break;
-	  case 'keep':
-	    str=str.replace(/^<keep.*?>/,'');
-		keepL=true;
-	  break;
+      case 'keep':
+        str=str.replace(/^<keep.*?>/,'');
+        keepL=true;
+      break;
       case 'spd':
         if((sp=tag[2].match(/^=(\d+)\s*\/?$/))){
           str=str.replace(/^<spd=\d+\s*\/?>/,'');
@@ -195,20 +324,58 @@ function show(str,DOM){
         }
       break;
       case 'color':
-        if((tc=tag[2].match(/^=('|")(.*?)\1\s*\/?$/))){
+        if((tc=tag[2].match(/^=(['"])(.*?)\1\s*\/?$/))){
           str=str.replace(/^<color=.*?>/,'');
           line.style.color=tc[2];
         }
       break;
+      case 'var':
+        vs='';
+        if((vn=tag[2].match(/\sn=(['"])(.*?)\1/))){
+          if((vv=tag[2].match(/\sv=((['"])(.*?)\2|([+*\-\/]?[\w_]+[_\d\w]*)(\s|\/?$))/))){
+            setVar(vn[2],vv[1]);
+          }
+          if(vars.hasOwnProperty(vn[2])&&tag[2].match(/\ss(how)?(\s|\/?$)/)){
+            vs=vars[vn[2]];
+          }
+        }
+        str=str.replace(/^<var.*?>/,vs);
+      break;
+      case 'if':
+        ir=false;;
+        if((ivn=tag[2].match(/\sn=(['"])(.*?)\1/))){
+          if((ic=tag[2].match(/\sc=(['"])(.*?)\1/))){
+            if((iv=tag[2].match(/\sv=(['"])(.*?)\1/))){
+              if(condition(ivn[2],ic[2],iv[2])){
+                if((igt=tag[2].match(/\sgt=(\d+)(\s|\/?$)/))){
+                  if(!isNaN(igt[1])){
+                    nextP=parseInt(igt[1]);
+                    nextA=true;
+                  }
+                }
+                ir=true;
+              }
+            }
+          }
+        }
+        if(str.match(/<if.*?>(.*?)<\/if>/)){
+          str=removeTag(str,'if',ifEnd);
+          if(!ir){
+            str=str.replace(RegExp('^.*?'+ifEnd),'');
+          }
+        }else{
+          str=str.replace(/^<if.*?>/,'');
+        }
+      break;
       case 'bg':
-        if((bg=tag[2].match(/^=('|")(.*?)\1.*?$/))){
-          str=str.replace(/^<bg=('|").*?\1.*?>/,'');
+        if((bg=tag[2].match(/^=(['"])(.*?)\1.*?$/))){
+          str=str.replace(/^<bg=(['"]).*?\1.*?>/,'');
           url=bg[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
           if(url){
             con.style.backgroundImage='url("'+url[0]+'")';
-            if((p=tag[2].match(/\sp=('|")(.*?)\1/))){p=p[2];}
-            if((w=tag[2].match(/\sw=(\d+)(\s|\/|$)/))){w=w[1]+'px';}
-            if((h=tag[2].match(/\sh=(\d+)(\s|\/|$)/))){h=h[1]+'px';}
+            if((p=tag[2].match(/\sp=(['"])(.*?)\1/))){p=p[2];}
+            if((w=tag[2].match(/\sw=(\d+)(\s|\/?$)/))){w=w[1]+'px';}
+            if((h=tag[2].match(/\sh=(\d+)(\s|\/?$)/))){h=h[1]+'px';}
           }else{
             con.style.backgroundImage='none';
             p='initial'
@@ -220,7 +387,7 @@ function show(str,DOM){
         }
       break;
       case 'img':
-        if((imgt=tag[2].match(/\s+src=('|")(.*?)\1/))){
+        if((imgt=tag[2].match(/\s+src=(['"])(.*?)\1/))){
           str=str.replace(/^<img.*?>/,'');
           url=imgt[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
           img.appendChild((tmp=document.createElement('div')));
@@ -231,29 +398,30 @@ function show(str,DOM){
             tmp.style.overflow='hidden';
           }
           tmp.style.position='absolute';
-          if((w=tag[2].match(/\sw=(\d+)(\s|\/|$)/))){
+          if((w=tag[2].match(/\sw=(\d+)(\s|\/?$)/))){
             tmp.style.width=w[1]+'px';
             nimg.width=w[1];
           }
-          if((h=tag[2].match(/\sh=(\d+)(\s|\/|$)/))){
+          if((h=tag[2].match(/\sh=(\d+)(\s|\/?$)/))){
             tmp.style.height=h[1]+'px';
             nimg.height=h[1];
           }
-          if((x=tag[2].match(/\sx=(-?\d+)(\s|\/|$)/))){
+          if((x=tag[2].match(/\sx=(-?\d+)(\s|\/?$)/))){
             if(x[1].substr(0,1)=='-'){
               tmp.style.right=x[1].substr(1)+'px';
             }else{
               tmp.style.left=x[1]+'px';
             }
           }
-          if((y=tag[2].match(/\sy=(-?\d+)(\s|\/|$)/))){
+          if((y=tag[2].match(/\sy=(-?\d+)(\s|\/?$)/))){
             if(y[1].substr(0,1)=='-'){
               tmp.style.bottom=y[1].substr(1)+'px';
             }else{
               tmp.style.top=y[1]+'px';
             }
           }
-          css=tag[0].match(/^<img.*?>/)[0].match(/\sstyle=('|").*?\1/);
+          cls=tag[2].match(/\sclass=(['"]).*?\1/);
+          css=tag[2].match(/\sstyle=(['"]).*?\1/);
           if(css){
             nimg.style.cssText+=css[0].slice(8,-1);
           }
@@ -265,22 +433,24 @@ function show(str,DOM){
       case 'span':
       case 'p':
         if(nt=str.match(/^<(a|div|span|p).*?>(.|\n)*<\/\1>/)){
-        DOM.appendChild((tmp=document.createElement(nt[1])));
-        css=tag[2].match(/\sstyle=('|").*?\1/);
-        if(css){
-          tmp.style.cssText=css[0].slice(8,-1);
-        }
-        if((gt=nt[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
-          tmp=addGt(gt[1],tmp);
-        }
-        sp=tag[2].match(/\sspd=(\d+)(\s|\/|$)/);
-        if(sp){
-          spd.push(Number(sp[1]));
-          str=removeTag(str,tag[1],sT);
+          DOM.appendChild((tmp=document.createElement(nt[1])));
+          css=tag[2].match(/\sstyle=(['"]).*?\1/);
+          if(css){
+            tmp.style.cssText=css[0].slice(8,-1);
+          }
+          if((gt=nt[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
+            tmp=addGt(gt[1],tmp);
+          }
+          sp=tag[2].match(/\sspd=(\d+)(\s|\/?$)/);
+          if(sp){
+            spd.push(Number(sp[1]));
+            str=removeTag(str,tag[1],sT);
+          }else{
+            str=removeTag(str,tag[1],tT);
+          }
+          DOM=tmp;
         }else{
-          str=removeTag(str,tag[1],tT);
-        }
-        DOM=tmp;
+          str=str.replace(tag[1],'\u0000'+tag[1]);
         }
       break;
       default:
@@ -307,7 +477,7 @@ function show(str,DOM){
         }//依讀入字元反應
         show(str.substr(1),DOM);
       }else{
-        pointerN();
+        pointerN(nextP);
         Cwait();
         if(nextA){nextC();}
       }

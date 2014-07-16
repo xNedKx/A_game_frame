@@ -2,20 +2,34 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>Dialog DEMO</title>
+<title>Project 1</title>
 <style>
 body{
-padding:0
-;margin:0;
+padding:0;
+margin:0;
 font-size:16px;
 align-center;
+}
+p{
+margin:0.3em 1em;
 }
 </style>
 </head>
 <body>
 <script>
+function loadData(url){
+  if(url){
+    scriptLoad=document.createElement('script');
+    scriptLoad.onload=function(){
+      this.parentNode.removeChild(this);
+    }
+    scriptLoad.src=url;
+    document.body.appendChild(scriptLoad);
+  }
+}
 var pointer=0;
 var lines=[];
+var vars={};
 function pointerN(go){
   if(typeof go!='number'){
     pointer++;
@@ -30,27 +44,29 @@ function pointerN(go){
 }//設定劇情指標位置
 function Cwait(){
   skip=false;
+  nextP=null;
   hint.style.display='block';
   hint.style.opacity=0;
-  if(pointer<lines.length){
+  if(sel){
+    con.onclick=null;
     hintBlink();
-    if(!sel){
+    sels=con.getElementsByClassName('gt');
+    for(op=0;op<sels.length;op++){
+      if(sels[op].hasAttribute('gt')){
+        sels[op].gt=Number(sels[op].getAttribute('gt'));
+        sels[op].onmouseup=function(){if(pointerN(this.gt)){nextC();}};
+        sels[op].onmouseover=function(){this.style.backgroundColor='rgba(255,255,255,0.4)';};
+        sels[op].onmouseout=function(){this.style.backgroundColor='rgba(0,0,0,0)';};
+        sels[op].removeAttribute('gt');
+        preloadImg(sels[op].gt);
+      }
+    }
+  }else{
+    if(pointer<lines.length){
+      hintBlink();
       con.onclick=function(){nextC();}
       con.style.cursor='pointer';
       preloadImg(pointer);
-    }else{
-      con.onclick=null;
-      sels=con.getElementsByClassName('gt');
-      for(op=0;op<sels.length;op++){
-        if(sels[op].hasAttribute('gt')){
-          sels[op].gt=Number(sels[op].getAttribute('gt'));
-          sels[op].onmouseup=function(){if(pointerN(this.gt)){nextC();}};
-          sels[op].onmouseover=function(){this.style.backgroundColor='rgba(255,255,255,0.4)';};
-          sels[op].onmouseout=function(){this.style.backgroundColor='rgba(0,0,0,0)';};
-          sels[op].removeAttribute('gt');
-          preloadImg(sels[op].gt);
-        }
-      }
     }
   }
 }//顯示完畢，等待輸入
@@ -63,9 +79,11 @@ function Csing(){
 function nextC(){
   if(pointer<lines.length){
     sel=false;
-    while(line.firstChild){line.removeChild(line.firstChild);}
+    if(!keepL){while(line.firstChild){line.removeChild(line.firstChild);}}
     while(img.firstChild){img.removeChild(img.firstChild);}
     spd=[dspd];
+    nextA=false;
+    keepL=false;
     show(lines[pointer],line);
   }
 }//載入劇情指標位置的劇情
@@ -88,7 +106,7 @@ function removeTag(str,tag,sub){
   for(cc=0;cc<str.length;cc++){
     if(str.substr(cc).match(RegExp('^</'+tag+'>'))){
       if(count==0){break;}else{count--;}
-    }else if(str.substr(cc).match(RegExp('^<'+tag+'>'))){count++;}
+    }else if(str.substr(cc).match(RegExp('^<'+tag+'.*?>'))){count++;}
   }
   return str.substr(0,cc)+sub+str.substr(cc+(('</'+tag+'>').length));
 }//清除TAG，在結束位置留下標記
@@ -143,34 +161,221 @@ function preloadImg(pt){
     }
     pl=pl.replace(/(<img.*?src=('|").*?\2.*?>|<bg=('|").*?\3.*?>)/,'');
   }
-}//
-var dspd=60;
+}//預先載入圖片
+function setVar(vns,vvs){
+var vvr,vvn;
+  if((vvr=vvs.match(/^(['"])(.*?)\1$/))){//有框框的話
+    if((vvn=vvr[2].match(/^([+*\-\/])(\d*.?\d+)$/))){//運算元開頭的數字串
+    vars[vns]=isNaN(vars[vns])?0:Number(vars[vns]);
+      switch(vvn[1]){
+      case '+':
+        vars[vns]+=Number(vvn[2]);
+      break;
+      case '-':
+        vars[vns]-=Number(vvn[2]);
+      break;
+      case '*':
+        vars[vns]*=Number(vvn[2]);
+      break;
+      case '/':
+        vars[vns]/=Number(vvn[2])!=0?Number(vvn[2]):1;
+      }
+    }else if((vvn=vvr[2].match(/^[+](.*?)$/))){
+      vars[vns]=vars.hasOwnProperty(vns)?vars[vns]+vvn[1]:vvn[1];
+    }else{
+      vars[vns]=vvr[2];
+    }
+  }else if((vvr=vvs.match(/^(.*?)(\s|\/?$)/))){//沒框框的話
+    if((vvn=vvr[1].match(/^([+\-*\/])?(.*?)$/))){
+      switch(vvn[1]){
+      case '+':
+        if(vars.hasOwnProperty(vvn[2])){
+          if(isNaN(vars[vns])){
+            if(isNaN(vars[vvn[2]])){vars[vns]+=vars[vvn[2]];}
+            else{vars[vns]=Number(vars[vvn[2]]);}
+          }else{
+            if(!isNaN(vars[vvn[2]])){vars[vns]+=Number(vars[vvn[2]]);}
+          }
+        }else if(vvn[2].match(/^\d*.?\d+$/)){
+          if(isNaN(vars[vns])){vars[vns]=Number(vvn[2]);}
+          else{vars[vns]+=Number(vvn[2]);}
+        }else{
+          console.log('add vars error.');
+        }
+      break;
+      case '-':
+        if(vars.hasOwnProperty(vvn[2])){
+          if(!isNaN(vars[vvn[2]])){
+            if(!isNaN(vars[vns])){vars[vns]-=Number(vars[vvn[2]]);}
+            else{vars[vns]=-Number(vars[vvn[2]]);}
+          }else{
+            console.log('minus vars error.');
+          }
+        }else if(vvn[2].match(/^\d*.?\d+$/)){
+          if(isNaN(vars[vns])){vars[vns]=-Number(vvn[2]);}
+          else{vars[vns]-=Number(vvn[2]);}
+        }else{
+          console.log('minus vars error.');
+        }
+      break;
+      case '*':
+        if(vars.hasOwnProperty(vvn[2])){
+          if(!isNaN(vars[vvn[2]])){
+            if(!isNaN(vars[vns])){vars[vns]*=Number(vars[vvn[2]]);}
+            else{vars[vns]=0;}
+          }else{
+            console.log('multiply vars error.');
+          }
+        }else if(vvn[2].match(/^\d*.?\d+$/)){
+          if(!isNaN(vars[vns])){vars[vns]*=Number(vvn[2]);}
+          else{console.log('multiply vars error.');}
+        }else{
+          console.log('multiply vars error.');
+        }
+      break;
+      case '/':
+        if(vars.hasOwnProperty(vvn[2])){
+          if(!isNaN(vars[vvn[2]])){
+            if(!isNaN(vars[vns])){
+              vars[vns]/=Number(vars[vvn[2]])==0?1:Number(vars[vvn[2]]);
+            }else{
+              vars[vns]=0;
+            }
+          }else{
+            console.log('devide vars error.');
+          }
+        }else if(vvn[2].match(/^\d*.?\d+$/)){
+          if(!isNaN(vars[vns])){
+            vars[vns]/=Number(vvn[2])==0?1:Number(vvn[2]);
+          }else{
+            console.log('devide vars error.');
+          }
+        }else{
+          console.log('devide vars error.');
+        }
+      break;
+      default:
+        if(vars.hasOwnProperty(vvn[2])){vars[vns]=vars[vvn[2]];}
+        else if(vvn[2].match(/^\d*.?\d+$/)){vars[vns]=Number(vvn[2]);}
+        else{console.log('set vars error.');}
+      }
+    }
+  }
+}
+function condition(n,c,v){//c:M|L|E
+  if(vars.hasOwnProperty(n)){
+    switch(c){
+    case 'E':
+      if(vars[n]==v){return true;}else{return false;}
+    break;
+    case 'M':
+      if(!isNaN(vars[n])&&!isNaN(v)&&vars[n]>v){return true;}else{return false;}
+    break
+    case 'L':
+      if(!isNaN(vars[n])&&!isNaN(v)&&vars[n]<v){return true;}else{return false;}
+    break;
+    case 'ME':
+    case 'EM':
+      if(!isNaN(vars[n])&&!isNaN(v)&&vars[n]>=v){return true;}else{return false;}
+    break;
+    case 'LE':
+    case 'EL':
+      if(!isNaN(vars[n])&&!isNaN(v)&&vars[n]<=v){return true;}else{return false;}
+    break;
+    default:
+      return false;
+    }
+  }else{
+    return false;
+  }
+}
+var dspd=100;
 var spd=[dspd];
 var skip=false;
+var nextA=false;
+var nextP=null;
+var keepL=false;
 var sel=false;
 var con,line,hint;
 var sT='\u001a';
 var tT='\u001b';
+var ifEnd='\u001c';
 function show(str,DOM){
-  if(str.length!=0){
+  var tag,sp,ne,tc,bg,url,p,w,h,x,y,imgt,nimg,tmp,css,cls,vn,vv,ivn,ic,iv,igt,ir,vs;
+  if(str.length>0){
     str=str.toString();
-    while((tag=str.match(/^<(a|div|span|img|spd|bg)(.*?)>/))){
+    while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next|keep|var|if)(\s+[^\s]+.*?|=.*?|\/?)>/))){
       switch(tag[1]){
+      case 'next':
+        sp=tag[2].match(/\sspd=(\d+)(\s|\/?$)/);
+        if(sp){spd.push(Number(sp[1]));}
+        if((ne=tag[2].match(/^=(\d+)(\s|\/?$)/))){nextP=parseInt(ne[1]);}
+        str=str.replace(/^<next.*?>/,'');
+        nextA=true;
+      break;
+      case 'keep':
+        str=str.replace(/^<keep.*?>/,'');
+        keepL=true;
+      break;
       case 'spd':
         if((sp=tag[2].match(/^=(\d+)\s*\/?$/))){
           str=str.replace(/^<spd=\d+\s*\/?>/,'');
           spd.push(Number(sp[1]));
         }
       break;
+      case 'color':
+        if((tc=tag[2].match(/^=(['"])(.*?)\1\s*\/?$/))){
+          str=str.replace(/^<color=.*?>/,'');
+          line.style.color=tc[2];
+        }
+      break;
+      case 'var':
+        vs='';
+        if((vn=tag[2].match(/\sn=(['"])(.*?)\1/))){
+          if((vv=tag[2].match(/\sv=((['"])(.*?)\2|([+*\-\/]?[\w_]+[_\d\w]*)(\s|\/?$))/))){
+            setVar(vn[2],vv[1]);
+          }
+          if(vars.hasOwnProperty(vn[2])&&tag[2].match(/\ss(how)?(\s|\/?$)/)){
+            vs=vars[vn[2]];
+          }
+        }
+        str=str.replace(/^<var.*?>/,vs);
+      break;
+      case 'if':
+        ir=false;;
+        if((ivn=tag[2].match(/\sn=(['"])(.*?)\1/))){
+          if((ic=tag[2].match(/\sc=(['"])(.*?)\1/))){
+            if((iv=tag[2].match(/\sv=(['"])(.*?)\1/))){
+              if(condition(ivn[2],ic[2],iv[2])){
+                if((igt=tag[2].match(/\sgt=(\d+)(\s|\/?$)/))){
+                  if(!isNaN(igt[1])){
+                    nextP=parseInt(igt[1]);
+                    nextA=true;
+                  }
+                }
+                ir=true;
+              }
+            }
+          }
+        }
+        if(str.match(/<if.*?>(.*?)<\/if>/)){
+          str=removeTag(str,'if',ifEnd);
+          if(!ir){
+            str=str.replace(RegExp('^.*?'+ifEnd),'');
+          }
+        }else{
+          str=str.replace(/^<if.*?>/,'');
+        }
+      break;
       case 'bg':
-        if((bg=tag[2].match(/^=('|")(.*?)\1.*?$/))){
-          str=str.replace(/^<bg=('|").*?\1.*?>/,'');
+        if((bg=tag[2].match(/^=(['"])(.*?)\1.*?$/))){
+          str=str.replace(/^<bg=(['"]).*?\1.*?>/,'');
           url=bg[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
           if(url){
             con.style.backgroundImage='url("'+url[0]+'")';
-            if((p=tag[2].match(/\s+p=('|")(.*?)\1/))){p=p[2];}
-            if((w=tag[2].match(/\s+w=(\d+)\s*/))){w=w[1]+'px';}
-            if((h=tag[2].match(/\s+h=(\d+)\s*/))){h=h[1]+'px';}
+            if((p=tag[2].match(/\sp=(['"])(.*?)\1/))){p=p[2];}
+            if((w=tag[2].match(/\sw=(\d+)(\s|\/?$)/))){w=w[1]+'px';}
+            if((h=tag[2].match(/\sh=(\d+)(\s|\/?$)/))){h=h[1]+'px';}
           }else{
             con.style.backgroundImage='none';
             p='initial'
@@ -178,11 +383,11 @@ function show(str,DOM){
             h='';
           }
           con.style.backgroundPosition=p;
-          con.style.backgroundSize=w?w+' '+h:'';
+          con.style.backgroundSize=w?(h?+" "+h:w+' auto'):(h?'auto '+h:'auto');
         }
       break;
       case 'img':
-        if((imgt=tag[2].match(/\s+src=('|")(.*?)\1/))){
+        if((imgt=tag[2].match(/\s+src=(['"])(.*?)\1/))){
           str=str.replace(/^<img.*?>/,'');
           url=imgt[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
           img.appendChild((tmp=document.createElement('div')));
@@ -190,29 +395,35 @@ function show(str,DOM){
             nimg=new Image();
             nimg.src=url[0];
             tmp.appendChild(nimg);
+            tmp.style.overflow='hidden';
           }
           tmp.style.position='absolute';
-          if((w=tag[2].match(/\s+w=(\d+)(\s|$)/))){
+          if((w=tag[2].match(/\sw=(\d+)(\s|\/?$)/))){
             tmp.style.width=w[1]+'px';
             nimg.width=w[1];
           }
-          if((h=tag[2].match(/\s+h=(\d+)(\s|$)/))){
+          if((h=tag[2].match(/\sh=(\d+)(\s|\/?$)/))){
             tmp.style.height=h[1]+'px';
             nimg.height=h[1];
           }
-          if((x=tag[2].match(/\s+x=(-?\d+)(\s|$)/))){
+          if((x=tag[2].match(/\sx=(-?\d+)(\s|\/?$)/))){
             if(x[1].substr(0,1)=='-'){
               tmp.style.right=x[1].substr(1)+'px';
             }else{
               tmp.style.left=x[1]+'px';
             }
           }
-          if((y=tag[2].match(/\s+y=(-?\d+)(\s|$)/))){
+          if((y=tag[2].match(/\sy=(-?\d+)(\s|\/?$)/))){
             if(y[1].substr(0,1)=='-'){
               tmp.style.bottom=y[1].substr(1)+'px';
             }else{
               tmp.style.top=y[1]+'px';
             }
+          }
+          cls=tag[2].match(/\sclass=(['"]).*?\1/);
+          css=tag[2].match(/\sstyle=(['"]).*?\1/);
+          if(css){
+            nimg.style.cssText+=css[0].slice(8,-1);
           }
          tmp=addGt(tag[2],tmp);
         }
@@ -220,49 +431,61 @@ function show(str,DOM){
       case 'a':
       case 'div':
       case 'span':
-        if(tag=str.match(/^<(a|div|span).*?>(.|\n)*<\/\1>/)){
-        DOM.appendChild((tmp=document.createElement(tag[1])));
-        css=tag[0].match(/^<(a|div|span).*?>/)[0].match(/style=('|").*?\1/);
-        if(css){
-          tmp.style.cssText=css[0].slice(7,-1);
-        }
-        if((gt=tag[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
-          tmp=addGt(gt[1],tmp);
-        }
-        sp=tag[0].match(/^<(a|div|span).*?>/)[0].match(/spd=\d+/);
-        if(sp){
-          spd.push(Number(sp[0].substr(4)));
-          str=removeTag(str,tag[1],sT);
+      case 'p':
+        if(nt=str.match(/^<(a|div|span|p).*?>(.|\n)*<\/\1>/)){
+          DOM.appendChild((tmp=document.createElement(nt[1])));
+          css=tag[2].match(/\sstyle=(['"]).*?\1/);
+          if(css){
+            tmp.style.cssText=css[0].slice(8,-1);
+          }
+          if((gt=nt[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
+            tmp=addGt(gt[1],tmp);
+          }
+          sp=tag[2].match(/\sspd=(\d+)(\s|\/?$)/);
+          if(sp){
+            spd.push(Number(sp[1]));
+            str=removeTag(str,tag[1],sT);
+          }else{
+            str=removeTag(str,tag[1],tT);
+          }
+          DOM=tmp;
         }else{
-          str=removeTag(str,tag[1],tT);
+          str=str.replace(tag[1],'\u0000'+tag[1]);
         }
-        DOM=tmp;
-        }
-        break;
+      break;
+      default:
+      str=str.replace(/^</,'<\u0000');
       }
     }//處理標籤跟屬性
     Csing();
     window.setTimeout(function(){
-      switch(str.substr(0,1)){
-      case sT: //先恢復速度
-        spd.pop();
-      case tT: //再脫離TAG
-        DOM=DOM.parentNode;
-      break;
-      case '\n': //用<br>換行
-        DOM.innerHTML+='<br>';
-      break;
-      case ' ': //用&nbsp;保持連續空白
-        DOM.innerHTML+='&nbsp;';
-      break;
-      default: //正常讀出字元
-        DOM.innerHTML+=str.substr(0,1);
-      }//依讀入字元反應
-      show(str.substr(1),DOM);
+      if(str.length>0){
+        switch(str.substr(0,1)){
+        case sT: //先恢復速度
+          spd.pop();
+        case tT: //再脫離TAG
+          DOM=DOM.parentNode;
+        break;
+        case '\n': //用<br>換行
+          DOM.innerHTML+='<br>';
+        break;
+        case ' ': //用&nbsp;保持連續空白
+          DOM.innerHTML+='&nbsp;';
+        break;
+        default: //正常讀出字元
+          DOM.innerHTML+=str.substr(0,1);
+        }//依讀入字元反應
+        show(str.substr(1),DOM);
+      }else{
+        pointerN(nextP);
+        Cwait();
+        if(nextA){nextC();}
+      }
     },skip?0:spd[spd.length-1]);
   }else{
-    pointerN();
+    pointerN(nextP);
     Cwait();
+    if(nextA){nextC();}
   }
 }
 window.onload=function(){
@@ -271,11 +494,12 @@ con.style.width='800px';
 con.style.height='600px';
 con.style.position='relative';
 con.style.backgroundColor='#000';
-con.style.color='#fff';
+con.style.color='#333';
 con.style.margin='10px auto';
 con.style.overflow='hidden';
 con.style.backgroundRepeat='no-repeat';
 con.style.fontFamily='consolas';
+con.style.fontSize="18px"
 con.appendChild((img=document.createElement('div')));
 img.style.width='800px';
 img.style.height='600px';
@@ -285,15 +509,16 @@ img.style.left='0';
 img.style.overflow='hidden';
 img.onmousedown=function(e){e.preventDefault();}
 con.appendChild((line=document.createElement('div')));
-line.style.width='800px';
-line.style.height='178px';
+line.style.width='760px';
+line.style.height='158px';
 line.style.position='absolute';
 line.style.top='420px'
 line.style.left='0';
-line.style.borderTop='2px ridge rgba(255,255,255,0.4)';
-line.style.backgroundColor='rgba(255,255,255,0.2)';
+line.style.borderTop='2px ridge rgba(255,255,255,0.9)';
+line.style.backgroundColor='rgba(255,255,255,0.8)';
 line.style.wordBreak='break-all';
 line.style.overflow='hidden';
+line.style.padding='10px 20px';
 line.style.zIndex='9999';
 line.onmousedown=function(e){e.preventDefault();}
 con.appendChild((hint=document.createElement('div')));
@@ -303,28 +528,12 @@ hint.style.position='absolute';
 hint.style.top='584px'
 hint.style.left='784px';
 hint.style.backgroundColor='rgba(0,0,0,0.4)';
+hint.style.zIndex='19999';
 hint.style.display='none';
 
 nextC();
 }
+loadData('./lines.js');
 </script>
-<script>
-lines=[
-'<spd=1/>歡迎使用對話框測試小程式，請<aa><span style="font-weight:bold;color:#F00" spd=300>按一下</span></a>繼續閱讀。',
-'目前右下角提示指標速度是0.5秒/0.5秒(顯示/隱藏)',
-'預設文字顯示速度是60ms，一次一個字元。\n可使用<\u0000spd=0>或<\u0000span spd=60>變速文字<\u0000/span>設定速度，每次對話都會恢復。顯示中點一下會加速到全顯。',
-'對話是回不去的喔～　^.<\n\n(GOOGLE圖片會到..?)<a gt>\n</a><a gt>NEXT</a><img src="https://www.google.com.tw/images/srpr/logo11w.png" h=100 x=100 y=100 gt=0><img src="https://www.google.com.tw/images/srpr/logo11w.png" w=100 x=500 y=300 gt=-0>',
-'對話到最後一句，你按再多次也不會有反應。',
-'圖片測試...\n\n\n\n\n<bg="https://www.google.com.tw/images/srpr/logo11w.png" p="center">\n\n\nGOOGLE!',
-'<bg=""/>換\n行\n測\n試\n......使用\\n會自動轉換為<br>tag。',
-'     空 白  測   試     \n\n半形空白會自動轉變成&nbsp;，所以不會自動縮排。',
-'連結測試...\n\n\n<a gt=0>選項一 回到開頭</a>\n<a gt=-0>選項二 到結束</a>\n\n<a gt>下一頁...</a>',
-'<spd=1/>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-'速度1ms的狂飆',
-'<spd=20/>The quick brown fox jumps over the lazy dog.',
-'<spd=10/>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\nBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n\nDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD\n\nEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE',
-'排版還是會依瀏覽器不同改變.. 大概還需要調整。',
-'<span style="color:rgb(200,200,200);" spd=0>                                             \n  >>>>>  >   > >>>>>       >>>>> >   > >>>>  \n  >>>>>  >   > >>>>>       >>>>> >>  > >>>>> \n    >    >   > >           >     >>  > >   > \n    >    >>>>> >>>>>       >>>>> >>> > >   > \n    >    >>>>> >>>>>       >>>>> > >>> >   > \n    >    >   > >           >     >  >> >   > \n    >    >   > >>>>>       >>>>> >  >> >>>>> \n    >    >   > >>>>>       >>>>> >   > >>>>  \n                                             </span>'
-];
-</script>
+<!--Programed By YzC-->
 </body>
