@@ -1,6 +1,6 @@
 lines=[
 '<bg="./BG1.jpg" p="0 -150px" w=800/><bg=""/><div style="text-align:center;"><span style="font-size:3em;" spd=200>一　個　懸　疑　故　事</span></div>',
-'<a gt=7></a><a gt=14></a><a gt=21></a><a gt=28></a><bg="./BG1.jpg" p="0 -150px" w=800 /><next spd=300/>',
+'<bg="./BG1.jpg" p="0 -150px" w=800 /><a gt=7></a><a gt=14></a><a gt=21></a><a gt=28></a><next spd=300/>',
 '<color="#111"/><span style="font-weight:bold;">在劍橋大學的公園裡，張庭瑜被尖銳的匕首畫破喉嚨一刀斃命。</span>',
 '<span style="font-weight:bold;">雪地上除了張庭瑜自己的足跡之外，只留下了另外兩個不像是人類腳印的痕跡。</span>',
 '<span style="font-weight:bold;">究竟是命運的糾纏，還是感情的糾葛，或者是金錢上的糾紛？\n\n到底兇手是誰？\n\n用什麼手法殺人？</span>',
@@ -36,7 +36,7 @@ lines=[
 '<spd=0/><div style="color:#F05959;font-weight:bold;margin-bottom:0.8em;">嫌疑犯1：葉亞笛</div><img src="./C1.jpg" w=300 x=-80 y=80/><p>主治醫師的女友，因為跟張庭瑜劈腿，被庭瑜以此威脅，</p><p>如果不讓他庭瑜下班後使用主治醫師的辦公室吹冷氣，</p><p>就要向主治醫師公開兩人劈腿的內容。因此亞笛對庭瑜產生殺意。</p><div style="color:#888;font-weight:bold;"><a gt=37>[犯人就是你！]</a>    <a gt=32>[我還要再想想]</a></div>',
 '<spd=0/><div style="color:#F05959;font-weight:bold;margin-bottom:0.8em;">嫌疑犯2：邱昌庭</div><img src="./C2.jpg" w=300 x=-80 y=80/><p>與庭瑜曾是同窗同學，因兩人常在名次上競爭，</p><p>加上女友吳台蘭被庭瑜搶走，所以對庭瑜懷有恨意。</p><p>興趣是計算物理算式。</p><div style="color:#888;font-weight:bold;"><a gt=37>[犯人就是你！]</a>    <a gt=32>[我還要再想想]</a></div>',
 '<spd=0/><div style="color:#F05959;font-weight:bold;margin-bottom:0.8em;">嫌疑犯3：吳台蘭</div><img src="./C3.jpg" w=300 x=-80 y=80/><p>舞台劇團的第一女主角，從小學習芭蕾舞，是公認的第一舞者，</p><p>曾與庭瑜交往一段時間，卻被無情的甩掉，因此對庭瑜怨恨在心。</p><p> </p><div style="color:#888;font-weight:bold;"><a gt=38>[犯人就是你！]</a>    <a gt=32>[我還要再想想]</a></div>',
-'<img src="./C4.jpg" w=300 x=-80 y=80><span style="color:#6666E5;font-weight:bold;" spd=0>金甲一：</span>\n\n  你的推理能力不夠喔。\n\n\n\n<div style="text-align:right;"><a gt=0 style="color:#666">[重頭來過]</a></div>',
+'<img src="./C4.jpg" w=300 x=-80 y=80><span style="color:#6666E5;font-weight:bold;" spd=0>金甲一：</span>\n\n  抓錯人了，你的推理能力不夠喔。\n\n\n\n<div style="text-align:right;"><a gt=0 style="color:#666">[重頭來過]</a></div>',
 '<img src="./C4.jpg" w=300 x=-80 y=80><span style="color:#6666E5;font-weight:bold;" spd=0>金甲一：</span>\n\n  沒錯！兇手就是吳台蘭！',
 '<img src="./C4.jpg" w=300 x=-80 y=80><div style="color:#6666E5;font-weight:bold;margin-bottom:0.8em;" spd=0>金甲一：</div><p>吳台蘭先假裝腳部受傷，誘使庭瑜背著她走入公園後，</p><p>拿出藏在身上的匕首從後面劃破庭瑜的喉嚨，</p><p>接著再利用從小學習的芭蕾舞技巧，</p><p>使用腳趾尖端小心翼翼地從雪地上不留足跡地離開公園。</p>',
 '<div style="text-align:center;"><span style="font-size:3em;" spd=200>成　功　破　案　！</span></div>\n\n\n<div style="text-align:right;"><a style="color:#666;" gt=0>[再玩一次]</a></div>'

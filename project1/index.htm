@@ -44,6 +44,7 @@ function pointerN(go){
 }//設定劇情指標位置
 function Cwait(){
   skip=false;
+  nextP=null;
   hint.style.display='block';
   hint.style.opacity=0;
   if(sel){
@@ -165,6 +166,7 @@ var dspd=100;
 var spd=[dspd];
 var skip=false;
 var nextA=false;
+var nextP=null;
 var keepL=false;
 var sel=false;
 var con,line,hint;
@@ -176,8 +178,9 @@ function show(str,DOM){
     while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next|keep)(.*?)>/))){
       switch(tag[1]){
       case 'next':
-        sp=tag[2].match(/\sspd=(\d+)(\s*|$)/);
+        sp=tag[2].match(/\sspd=(\d+)(\s|\/|$)/);
         if(sp){spd.push(Number(sp[1]));}
+	    if((ne=tag[2].match(/^=(\d+)(\s|\/|$)/))){nextP=Number(ne[1]);}
         str=str.replace(/^<next.*?>/,'');
         nextA=true;
       break;
@@ -204,8 +207,8 @@ function show(str,DOM){
           if(url){
             con.style.backgroundImage='url("'+url[0]+'")';
             if((p=tag[2].match(/\sp=('|")(.*?)\1/))){p=p[2];}
-            if((w=tag[2].match(/\sw=(\d+)(\s|$|\/)/))){w=w[1]+'px';}
-            if((h=tag[2].match(/\sh=(\d+)(\s|$|\/)/))){h=h[1]+'px';}
+            if((w=tag[2].match(/\sw=(\d+)(\s|\/|$)/))){w=w[1]+'px';}
+            if((h=tag[2].match(/\sh=(\d+)(\s|\/|$)/))){h=h[1]+'px';}
           }else{
             con.style.backgroundImage='none';
             p='initial'
@@ -228,31 +231,31 @@ function show(str,DOM){
             tmp.style.overflow='hidden';
           }
           tmp.style.position='absolute';
-          if((w=tag[2].match(/\sw=(\d+)(\s|$|\/)/))){
+          if((w=tag[2].match(/\sw=(\d+)(\s|\/|$)/))){
             tmp.style.width=w[1]+'px';
             nimg.width=w[1];
           }
-          if((h=tag[2].match(/\sh=(\d+)(\s|$|\/)/))){
+          if((h=tag[2].match(/\sh=(\d+)(\s|\/|$)/))){
             tmp.style.height=h[1]+'px';
             nimg.height=h[1];
           }
-          if((x=tag[2].match(/\sx=(-?\d+)(\s|$|\/)/))){
+          if((x=tag[2].match(/\sx=(-?\d+)(\s|\/|$)/))){
             if(x[1].substr(0,1)=='-'){
               tmp.style.right=x[1].substr(1)+'px';
             }else{
               tmp.style.left=x[1]+'px';
             }
           }
-          if((y=tag[2].match(/\sy=(-?\d+)(\s|$|\/)/))){
+          if((y=tag[2].match(/\sy=(-?\d+)(\s|\/|$)/))){
             if(y[1].substr(0,1)=='-'){
               tmp.style.bottom=y[1].substr(1)+'px';
             }else{
               tmp.style.top=y[1]+'px';
             }
           }
-          css=tag[0].match(/^<img.*?>/)[0].match(/style=('|").*?\1/);
+          css=tag[0].match(/^<img.*?>/)[0].match(/\sstyle=('|").*?\1/);
           if(css){
-            nimg.style.cssText+=css[0].slice(7,-1);
+            nimg.style.cssText+=css[0].slice(8,-1);
           }
          tmp=addGt(tag[2],tmp);
         }
@@ -261,16 +264,16 @@ function show(str,DOM){
       case 'div':
       case 'span':
       case 'p':
-        if(tag=str.match(/^<(a|div|span|p).*?>(.|\n)*<\/\1>/)){
-        DOM.appendChild((tmp=document.createElement(tag[1])));
-        css=tag[0].match(/^<(a|div|span|p).*?>/)[0].match(/style=('|").*?\1/);
+        if(nt=str.match(/^<(a|div|span|p).*?>(.|\n)*<\/\1>/)){
+        DOM.appendChild((tmp=document.createElement(nt[1])));
+        css=tag[2].match(/\sstyle=('|").*?\1/);
         if(css){
-          tmp.style.cssText=css[0].slice(7,-1);
+          tmp.style.cssText=css[0].slice(8,-1);
         }
-        if((gt=tag[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
+        if((gt=nt[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
           tmp=addGt(gt[1],tmp);
         }
-        sp=tag[0].match(/^<(a|div|span|p).*?>/)[0].match(/spd=(\d+)(\s|$|\/)/);
+        sp=tag[2].match(/\sspd=(\d+)(\s|\/|$)/);
         if(sp){
           spd.push(Number(sp[1]));
           str=removeTag(str,tag[1],sT);
@@ -310,7 +313,7 @@ function show(str,DOM){
       }
     },skip?0:spd[spd.length-1]);
   }else{
-    pointerN();
+    pointerN(nextP);
     Cwait();
     if(nextA){nextC();}
   }
