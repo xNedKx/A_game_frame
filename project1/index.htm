@@ -321,8 +321,8 @@ function show(str,DOM){
         keepL=true;
       break;
       case 'spd':
+        str=str.replace(/^<spd.*?>/,'');
         if(sp=tag[2].match(/^=(\d+)\s*\/?$/)){
-          str=str.replace(/^<spd=\d+\s*\/?>/,'');
           spd.push(Number(sp[1]));
         }
       break;
@@ -389,8 +389,8 @@ function show(str,DOM){
         }
       break;
       case 'img':
+        str=str.replace(/^<img.*?>/,'');
         if(imgt=tag[2].match(/\s+src=(['"])(.*?)\1/)){
-          str=str.replace(/^<img.*?>/,'');
           img.appendChild((tmp=document.createElement('div')));
           if(url=imgt[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/)){
             nimg=new Image();
