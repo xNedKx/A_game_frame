@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>Project 1</title>
+<title>DEMO</title>
 <style>
 body{
 padding:0;
@@ -111,7 +111,7 @@ function removeTag(str,tag,sub){
   return str.substr(0,cc)+sub+str.substr(cc+(('</'+tag+'>').length));
 }//清除TAG，在結束位置留下標記
 function addGt(str,dom){
-  if((gt=str.match(/\sgt(=(-?\d+))?(\s|$)/))){
+  if(gt=str.match(/\sgt(=(-?\d+))?(\s|$)/)){
     if(gt[2]){
       if(gt[2].substr(0,1)=='-'){gtn=lines.length+Number(gt[2])-1;}else{gtn=Number(gt[2]);}
       sel=true;
@@ -130,10 +130,10 @@ function addGt(str,dom){
 var imgPL=[];
 function preloadImg(pt){
   pl=lines[pt];
-  while((r1=pl.match(/(<img.*?src=('|").*?\2.*?>|<bg=('|").*?\3.*?>)/))){
+  while(r1=pl.match(/(<img.*?src=('|").*?\2.*?>|<bg=('|").*?\3.*?>)/)){
     dup=false;
     if(r1[0].substr(1,1)=='i'){
-      if((r2=r1[0].match(/(\s|"|')src=('|")(.*?)\2/))){
+      if(r2=r1[0].match(/(\s|"|')src=('|")(.*?)\2/)){
         for(i=0;i<imgPL.length;i++){
           if(imgPL[i].src==r2[3]){
             dup=true;
@@ -146,7 +146,7 @@ function preloadImg(pt){
         }
       }
     }else if(r1[0].substr(1,1)=='b'){
-      if((r2=r1[0].match(/^<bg=('|")(.*?)\1/))){
+      if(r2=r1[0].match(/^<bg=('|")(.*?)\1/)){
         for(i=0;i<imgPL.length;i++){
           if(imgPL[i].src==r2[2]){
             dup=true;
@@ -164,8 +164,8 @@ function preloadImg(pt){
 }//預先載入圖片
 function setVar(vns,vvs){
 var vvr,vvn;
-  if((vvr=vvs.match(/^(['"])(.*?)\1$/))){//有框框的話
-    if((vvn=vvr[2].match(/^([+*\-\/])(\d*.?\d+)$/))){//運算元開頭的數字串
+  if(vvr=vvs.match(/^(['"])(.*?)\1$/)){//有框框的話
+    if(vvn=vvr[2].match(/^([+*\-\/])(\d*.?\d+)$/)){//運算元開頭的數字串
     vars[vns]=isNaN(vars[vns])?0:Number(vars[vns]);
       switch(vvn[1]){
       case '+':
@@ -180,13 +180,13 @@ var vvr,vvn;
       case '/':
         vars[vns]/=Number(vvn[2])!=0?Number(vvn[2]):1;
       }
-    }else if((vvn=vvr[2].match(/^[+](.*?)$/))){
+    }else if(vvn=vvr[2].match(/^[+](.*?)$/)){
       vars[vns]=vars.hasOwnProperty(vns)?vars[vns]+vvn[1]:vvn[1];
     }else{
       vars[vns]=vvr[2];
     }
-  }else if((vvr=vvs.match(/^(.*?)(\s|\/?$)/))){//沒框框的話
-    if((vvn=vvr[1].match(/^([+\-*\/])?(.*?)$/))){
+  }else if(vvr=vvs.match(/^(.*?)(\s|\/?$)/)){//沒框框的話
+    if(vvn=vvr[1].match(/^([+\-*\/])?(.*?)$/)){
       switch(vvn[1]){
       case '+':
         if(vars.hasOwnProperty(vvn[2])){
@@ -304,35 +304,38 @@ function show(str,DOM){
   var tag,sp,ne,tc,bg,url,p,w,h,x,y,imgt,nimg,tmp,css,cls,vn,vv,ivn,ic,iv,igt,ir,vs;
   if(str.length>0){
     str=str.toString();
-    while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next|keep|var|if)(\s+[^\s]+.*?|=.*?|\/?)>/))){
+    while(tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next|keep|var|if)(\s+[^\s]+.*?|=.*?|\/?)>/)){
       switch(tag[1]){
       case 'next':
-        sp=tag[2].match(/\sspd=(\d+)(\s|\/?$)/);
-        if(sp){spd.push(Number(sp[1]));}
-        if((ne=tag[2].match(/^=(\d+)(\s|\/?$)/))){nextP=parseInt(ne[1]);}
         str=str.replace(/^<next.*?>/,'');
         nextA=true;
+        if(sp=tag[2].match(/\sspd=(\d+)(\s|\/?$)/)){
+          spd.push(Number(sp[1]));
+        }
+        if(ne=tag[2].match(/^=(\d+)(\s|\/?$)/)){
+          nextP=parseInt(ne[1]);
+        }
       break;
       case 'keep':
         str=str.replace(/^<keep.*?>/,'');
         keepL=true;
       break;
       case 'spd':
-        if((sp=tag[2].match(/^=(\d+)\s*\/?$/))){
+        if(sp=tag[2].match(/^=(\d+)\s*\/?$/)){
           str=str.replace(/^<spd=\d+\s*\/?>/,'');
           spd.push(Number(sp[1]));
         }
       break;
       case 'color':
-        if((tc=tag[2].match(/^=(['"])(.*?)\1\s*\/?$/))){
+        if(tc=tag[2].match(/^=(['"])(.*?)\1\s*\/?$/)){
           str=str.replace(/^<color=.*?>/,'');
           line.style.color=tc[2];
         }
       break;
       case 'var':
         vs='';
-        if((vn=tag[2].match(/\sn=(['"])(.*?)\1/))){
-          if((vv=tag[2].match(/\sv=((['"])(.*?)\2|([+*\-\/]?[\w_]+[_\d\w]*)(\s|\/?$))/))){
+        if(vn=tag[2].match(/\sn=(['"])(.*?)\1/)){
+          if(vv=tag[2].match(/\sv=((['"])(.*?)\2|([+*\-\/]?[\w_]+[_\d\w]*)(\s|\/?$))/)){
             setVar(vn[2],vv[1]);
           }
           if(vars.hasOwnProperty(vn[2])&&tag[2].match(/\ss(how)?(\s|\/?$)/)){
@@ -343,11 +346,11 @@ function show(str,DOM){
       break;
       case 'if':
         ir=false;;
-        if((ivn=tag[2].match(/\sn=(['"])(.*?)\1/))){
-          if((ic=tag[2].match(/\sc=(['"])(.*?)\1/))){
-            if((iv=tag[2].match(/\sv=(['"])(.*?)\1/))){
+        if(ivn=tag[2].match(/\sn=(['"])(.*?)\1/)){
+          if(ic=tag[2].match(/\sc=(['"])(.*?)\1/)){
+            if(iv=tag[2].match(/\sv=(['"])(.*?)\1/)){
               if(condition(ivn[2],ic[2],iv[2])){
-                if((igt=tag[2].match(/\sgt=(\d+)(\s|\/?$)/))){
+                if(igt=tag[2].match(/\sgt=(\d+)(\s|\/?$)/)){
                   if(!isNaN(igt[1])){
                     nextP=parseInt(igt[1]);
                     nextA=true;
@@ -368,14 +371,13 @@ function show(str,DOM){
         }
       break;
       case 'bg':
-        if((bg=tag[2].match(/^=(['"])(.*?)\1.*?$/))){
+        if(bg=tag[2].match(/^=(['"])(.*?)\1.*?$/)){
           str=str.replace(/^<bg=(['"]).*?\1.*?>/,'');
-          url=bg[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
-          if(url){
+          if(url=bg[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/)){
             con.style.backgroundImage='url("'+url[0]+'")';
-            if((p=tag[2].match(/\sp=(['"])(.*?)\1/))){p=p[2];}
-            if((w=tag[2].match(/\sw=(\d+)(\s|\/?$)/))){w=w[1]+'px';}
-            if((h=tag[2].match(/\sh=(\d+)(\s|\/?$)/))){h=h[1]+'px';}
+            if(p=tag[2].match(/\sp=(['"])(.*?)\1/)){p=p[2];}
+            if(w=tag[2].match(/\sw=(\d+)(\s|\/?$)/)){w=w[1]+'px';}
+            if(h=tag[2].match(/\sh=(\d+)(\s|\/?$)/)){h=h[1]+'px';}
           }else{
             con.style.backgroundImage='none';
             p='initial'
@@ -387,43 +389,43 @@ function show(str,DOM){
         }
       break;
       case 'img':
-        if((imgt=tag[2].match(/\s+src=(['"])(.*?)\1/))){
+        if(imgt=tag[2].match(/\s+src=(['"])(.*?)\1/)){
           str=str.replace(/^<img.*?>/,'');
-          url=imgt[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/);
           img.appendChild((tmp=document.createElement('div')));
-          if(url){
+          if(url=imgt[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/)){
             nimg=new Image();
             nimg.src=url[0];
             tmp.appendChild(nimg);
             tmp.style.overflow='hidden';
           }
           tmp.style.position='absolute';
-          if((w=tag[2].match(/\sw=(\d+)(\s|\/?$)/))){
+          if(w=tag[2].match(/\sw=(\d+)(\s|\/?$)/)){
             tmp.style.width=w[1]+'px';
             nimg.width=w[1];
           }
-          if((h=tag[2].match(/\sh=(\d+)(\s|\/?$)/))){
+          if(h=tag[2].match(/\sh=(\d+)(\s|\/?$)/)){
             tmp.style.height=h[1]+'px';
             nimg.height=h[1];
           }
-          if((x=tag[2].match(/\sx=(-?\d+)(\s|\/?$)/))){
+          if(x=tag[2].match(/\sx=(-?\d+)(\s|\/?$)/)){
             if(x[1].substr(0,1)=='-'){
               tmp.style.right=x[1].substr(1)+'px';
             }else{
               tmp.style.left=x[1]+'px';
             }
           }
-          if((y=tag[2].match(/\sy=(-?\d+)(\s|\/?$)/))){
+          if(y=tag[2].match(/\sy=(-?\d+)(\s|\/?$)/)){
             if(y[1].substr(0,1)=='-'){
               tmp.style.bottom=y[1].substr(1)+'px';
             }else{
               tmp.style.top=y[1]+'px';
             }
           }
-          cls=tag[2].match(/\sclass=(['"]).*?\1/);
-          css=tag[2].match(/\sstyle=(['"]).*?\1/);
-          if(css){
-            nimg.style.cssText+=css[0].slice(8,-1);
+          if(cls=tag[2].match(/\sclass=(['"])(.*?)\1/)){
+            tmp.className=cls[2];
+          }
+          if(css=tag[2].match(/\sstyle=(['"])(.*?)\1/)){
+            nimg.style.cssText+=css[2];
           }
          tmp=addGt(tag[2],tmp);
         }
@@ -433,16 +435,14 @@ function show(str,DOM){
       case 'span':
       case 'p':
         if(nt=str.match(/^<(a|div|span|p).*?>(.|\n)*<\/\1>/)){
-          DOM.appendChild((tmp=document.createElement(nt[1])));
-          css=tag[2].match(/\sstyle=(['"]).*?\1/);
-          if(css){
-            tmp.style.cssText=css[0].slice(8,-1);
+          DOM.appendChild(tmp=document.createElement(nt[1]));
+          if(css=tag[2].match(/\sstyle=(['"])(.*?)\1/)){
+            tmp.style.cssText=css[2];
           }
-          if((gt=nt[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
+          if(gt=nt[0].match(/^<a(.*?)>(.|\n)*<\/a>/)){
             tmp=addGt(gt[1],tmp);
           }
-          sp=tag[2].match(/\sspd=(\d+)(\s|\/?$)/);
-          if(sp){
+          if(sp=tag[2].match(/\sspd=(\d+)(\s|\/?$)/)){
             spd.push(Number(sp[1]));
             str=removeTag(str,tag[1],sT);
           }else{
