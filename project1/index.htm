@@ -29,6 +29,7 @@ function loadData(url){
 }
 var pointer=0;
 var lines=[];
+var vars={};
 function pointerN(go){
   if(typeof go!='number'){
     pointer++;
@@ -203,8 +204,8 @@ function show(str,DOM){
           if(url){
             con.style.backgroundImage='url("'+url[0]+'")';
             if((p=tag[2].match(/\sp=('|")(.*?)\1/))){p=p[2];}
-            if((w=tag[2].match(/\sw=(\d+)(\s|$)/))){w=w[1]+'px';}
-            if((h=tag[2].match(/\sh=(\d+)(\s|$)/))){h=h[1]+'px';}
+            if((w=tag[2].match(/\sw=(\d+)(\s|$|\/)/))){w=w[1]+'px';}
+            if((h=tag[2].match(/\sh=(\d+)(\s|$|\/)/))){h=h[1]+'px';}
           }else{
             con.style.backgroundImage='none';
             p='initial'
@@ -227,22 +228,22 @@ function show(str,DOM){
             tmp.style.overflow='hidden';
           }
           tmp.style.position='absolute';
-          if((w=tag[2].match(/\sw=(\d+)(\s|$)/))){
+          if((w=tag[2].match(/\sw=(\d+)(\s|$|\/)/))){
             tmp.style.width=w[1]+'px';
             nimg.width=w[1];
           }
-          if((h=tag[2].match(/\sh=(\d+)(\s|$)/))){
+          if((h=tag[2].match(/\sh=(\d+)(\s|$|\/)/))){
             tmp.style.height=h[1]+'px';
             nimg.height=h[1];
           }
-          if((x=tag[2].match(/\sx=(-?\d+)(\s|$)/))){
+          if((x=tag[2].match(/\sx=(-?\d+)(\s|$|\/)/))){
             if(x[1].substr(0,1)=='-'){
               tmp.style.right=x[1].substr(1)+'px';
             }else{
               tmp.style.left=x[1]+'px';
             }
           }
-          if((y=tag[2].match(/\sy=(-?\d+)(\s|$)/))){
+          if((y=tag[2].match(/\sy=(-?\d+)(\s|$|\/)/))){
             if(y[1].substr(0,1)=='-'){
               tmp.style.bottom=y[1].substr(1)+'px';
             }else{
@@ -269,7 +270,7 @@ function show(str,DOM){
         if((gt=tag[0].match(/^<a(.*?)>(.|\n)*<\/a>/))){
           tmp=addGt(gt[1],tmp);
         }
-        sp=tag[0].match(/^<(a|div|span|p).*?>/)[0].match(/spd=(\d+)(\s*|$)/);
+        sp=tag[0].match(/^<(a|div|span|p).*?>/)[0].match(/spd=(\d+)(\s|$|\/)/);
         if(sp){
           spd.push(Number(sp[1]));
           str=removeTag(str,tag[1],sT);
