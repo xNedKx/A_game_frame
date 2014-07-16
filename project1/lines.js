@@ -1,6 +1,6 @@
 lines=[
-'<div style="text-align:center;"><span style="font-size:3em;" spd=200>一　個　懸　疑　故　事</span></div>',
-'<bg="./BG1.jpg" p="0 -150px" w=800 /><next spd=300/>',
+'<bg="./BG1.jpg" p="0 -150px" w=800/><bg=""/><div style="text-align:center;"><span style="font-size:3em;" spd=200>一　個　懸　疑　故　事</span></div>',
+'<a gt=7></a><a gt=14></a><a gt=21></a><a gt=28></a><bg="./BG1.jpg" p="0 -150px" w=800 /><next spd=300/>',
 '<color="#111"/><span style="font-weight:bold;">在劍橋大學的公園裡，張庭瑜被尖銳的匕首畫破喉嚨一刀斃命。</span>',
 '<span style="font-weight:bold;">雪地上除了張庭瑜自己的足跡之外，只留下了另外兩個不像是人類腳印的痕跡。</span>',
 '<span style="font-weight:bold;">究竟是命運的糾纏，還是感情的糾葛，或者是金錢上的糾紛？\n\n到底兇手是誰？\n\n用什麼手法殺人？</span>',
