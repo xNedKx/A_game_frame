@@ -78,10 +78,11 @@ function Csing(){
 function nextC(){
   if(pointer<lines.length){
     sel=false;
-    while(line.firstChild){line.removeChild(line.firstChild);}
+    if(!keepL){while(line.firstChild){line.removeChild(line.firstChild);}}
     while(img.firstChild){img.removeChild(img.firstChild);}
     spd=[dspd];
     nextA=false;
+	keepL=false;
     show(lines[pointer],line);
   }
 }//載入劇情指標位置的劇情
@@ -164,6 +165,7 @@ var dspd=100;
 var spd=[dspd];
 var skip=false;
 var nextA=false;
+var keepL=false;
 var sel=false;
 var con,line,hint;
 var sT='\u001a';
@@ -171,7 +173,7 @@ var tT='\u001b';
 function show(str,DOM){
   if(str.length>0){
     str=str.toString();
-    while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next)(.*?)>/))){
+    while((tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next|keep)(.*?)>/))){
       switch(tag[1]){
       case 'next':
         sp=tag[2].match(/\sspd=(\d+)(\s*|$)/);
@@ -179,6 +181,10 @@ function show(str,DOM){
         str=str.replace(/^<next.*?>/,'');
         nextA=true;
       break;
+	  case 'keep':
+	    str=str.replace(/^<keep.*?>/,'');
+		keepL=true;
+	  break;
       case 'spd':
         if((sp=tag[2].match(/^=(\d+)\s*\/?$/))){
           str=str.replace(/^<spd=\d+\s*\/?>/,'');
