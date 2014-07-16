@@ -37,4 +37,5 @@ lines=[
 '<img src="./C4.jpg" w=300 x=-80 y=80><div style="color:#6666E5;font-weight:bold;margin-bottom:0.8em;" spd=0>金甲一：</div><p>吳台蘭先假裝腳部受傷，誘使庭瑜背著她走入公園後，</p><p>拿出藏在身上的匕首從後面劃破庭瑜的喉嚨，</p><p>接著再利用從小學習的芭蕾舞技巧，</p><p>使用腳趾尖端小心翼翼地從雪地上不留足跡地離開公園。</p>',
 '<div style="text-align:center;"><span style="font-size:3em;" spd=200>成　功　破　案　！</span></div>\n\n\n<div style="text-align:right;"><a style="color:#666;" gt=0>[再玩一次]</a></div>'
 ]
+logo='./p1.png';
 //Writen By Lin, Arranged By Yz
