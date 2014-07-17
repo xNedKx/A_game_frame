@@ -263,7 +263,8 @@ var vvr,vvn;
         }
       break;
       default:
-        if(vars.hasOwnProperty(vvn[2])){vars[vns]=vars[vvn[2]];}
+        if(vvn[2]=='rnd'){vars[vns]=Math.random();}
+        else if(vars.hasOwnProperty(vvn[2])){vars[vns]=vars[vvn[2]];}
         else if(vvn[2].match(/^\d*.?\d+$/)){vars[vns]=Number(vvn[2]);}
         else{console.log('set vars error.');}
       }
@@ -271,7 +272,17 @@ var vvr,vvn;
   }
 }
 function condition(n,c,v){//c:M|L|E
+  var vs;
   if(vars.hasOwnProperty(n)){
+    if(vs=v.match(/^(['"])(.*?)\1$/)){
+      v=vs[2];
+    }else if(vs=v.match(/^(.*?)(\s|\/?$)/)){
+      if(vars.hasOwnProperty(vs[1])){
+        v=vars[vs[1]];
+      }else{
+        return false;
+      }
+    }
     switch(c){
     case 'E':
       if(vars[n]==v){return true;}else{return false;}
@@ -326,6 +337,8 @@ return str.toString().replace(/[^\s_0-9A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-
 }
 var dspd=100;
 var spd=[dspd];
+var dlh=420;
+var dlbgc='rgba(255,255,255,0.8)';
 var skip=false;
 var nextA=false;
 var nextP=null;
@@ -336,10 +349,10 @@ var sT='\u001a';
 var tT='\u001b';
 var ifEnd='\u001c';
 function show(str,DOM){
-  var tag,sp,ne,tc,bg,url,p,w,h,x,y,imgt,nimg,tmp,css,cls,vn,vv,ivn,ic,iv,igt,ir,vs,inp,inpt,inpv;
+  var tag,sp,ne,tc,bg,url,p,w,h,x,y,imgt,nimg,tmp,css,cls,vn,vv,ivn,ic,iv,igt,ir,vs,inp,inpt,inpv,lh,au,at;
   if(str.length>0){
     str=str.toString();
-    while(tag=str.match(/^<(a|div|span|p|img|input|var|if|spd|next|keep|skip|bg|color)(\s+[^\s]+.*?|=.*?|\/?)>/)){
+    while(tag=str.match(/^<(a|div|span|p|img|input|var|if|spd|next|keep|skip|bg|color|lh|audio)(\s+[^\s]+.*?|=.*?|\/?)>/)){
       switch(tag[1]){
       case 'next':
         str=str.replace(/^<next.*?>/,'');
@@ -371,6 +384,17 @@ function show(str,DOM){
           line.style.color=tc[2];
         }
       break;
+      case 'lh':
+        if(lh=tag[2].match(/^=(\d+)(\s|\/?$)/)){
+          line.style.top=(600-parseInt(lh[1]))+'px';
+        }else{
+          line.style.top=dlh+'px';
+        }
+        if(lbg=tag[2].match(/\sbgc=(['"])(.*?)\1/)){
+          line.style.backgroundColor=lbg[2]?lbg[2]:dlbgc;
+        }
+        str=str.replace(/^<lh.*?>/,'');
+      break;
       case 'var':
         vs='';
         if(vn=tag[2].match(/\sn=(['"])(.*?)\1/)){
@@ -387,8 +411,8 @@ function show(str,DOM){
         ir=false;;
         if(ivn=tag[2].match(/\sn=(['"])(.*?)\1/)){
           if(ic=tag[2].match(/\sc=(['"])(.*?)\1/)){
-            if(iv=tag[2].match(/\sv=(['"])(.*?)\1/)){
-              if(condition(ivn[2],ic[2],iv[2])){
+            if(iv=tag[2].match(/\sv=((['"])(.*?)\2|([+*\-\/]?[\w_]+[_\d\w]*)(\s|\/?$))/)){
+              if(condition(ivn[2],ic[2],iv[1])){
                 if(igt=tag[2].match(/\sgt=(\d+)(\s|\/?$)/)){
                   if(!isNaN(igt[1])){
                     nextP=parseInt(igt[1]);
@@ -404,6 +428,8 @@ function show(str,DOM){
           str=removeTag(str,'if',ifEnd);
           if(!ir){
             str=str.replace(RegExp('^.*?'+ifEnd),'');
+          }else{
+            str=str.replace(RegExp(ifEnd),'');
           }
         }else{
           str=str.replace(/^<if.*?>/,'');
@@ -429,7 +455,7 @@ function show(str,DOM){
       break;
       case 'img':
         str=str.replace(/^<img.*?>/,'');
-        if(imgt=tag[2].match(/\s+src=(['"])(.*?)\1/)){
+        if(imgt=tag[2].match(/\ssrc=(['"])(.*?)\1/)){
           img.appendChild((tmp=document.createElement('div')));
           if(url=imgt[2].match(/^(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)$/)){
             nimg=new Image();
@@ -478,6 +504,12 @@ function show(str,DOM){
           inpt.onclick=function(e){e.stopPropagation();};
           if(inpv=tag[2].match(/\sv=(['"])(.*?)\1/)){
             inpt.value=removeNU(inpv[2]);
+          }else if(inpv=tag[2].match(/\sv=(.*?)(\s|\/?$)/)){
+            if(inpv[1]=='rnd'){
+              inpt.value=Math.random(); 
+            }else if(vars.hasOwnProperty(inpv[1])){
+              inpt.value=vars[inpv[1]];
+            }
           }
           if(inpm=tag[2].match(/\smaxL=(\d+)(\s|\/?$)/)){
             inpt.maxLength=parseInt(inpm[1]);
@@ -492,6 +524,23 @@ function show(str,DOM){
           }
         }
         str=str.replace(/^<input.*?>/,'');
+      break;
+      case 'audio':
+        if(au=tag[2].match(/^=(['"])((https?:\/\/|\.{0,2}\/).*?(\.mp3|\.ogg))\1/)){
+          if(tag[2].match(/\sbg(m)?(\s|\/?$)/)){
+            while(aud.firstChild){aud.removeChild(aud.firstChild);}
+            aud.appendChild(at=document.createElement('audio'));
+            at.autoplay=true;
+          }else{
+            DOM.appendChild(at=document.createElement('audio'));
+          }
+          if(tag[2].match(/\sl(oop)?(\s|\/?$)/)){
+            at.loop=true;
+          }
+          at.src=au[2];
+          at.play();
+        }
+        str=str.replace(/^<audio.*?>/,'');
       break;
       case 'a':
       case 'div':
@@ -532,9 +581,9 @@ function show(str,DOM){
     if(nextA){nextC();}
   }
 }
-var con,img,line,hint;
+var con,img,line,hint,aud;
 window.onload=function(){
-document.body.appendChild((con=document.createElement('div')));
+document.body.appendChild(con=document.createElement('div'));
 con.style.width='800px';
 con.style.height='600px';
 con.style.position='relative';
@@ -545,7 +594,7 @@ con.style.overflow='hidden';
 con.style.backgroundRepeat='no-repeat';
 con.style.fontFamily='consolas';
 con.style.fontSize="18px"
-con.appendChild((img=document.createElement('div')));
+con.appendChild(img=document.createElement('div'));
 img.style.width='800px';
 img.style.height='600px';
 img.style.position='absolute';
@@ -553,20 +602,21 @@ img.style.top='0';
 img.style.left='0';
 img.style.overflow='hidden';
 img.onmousedown=function(e){e.preventDefault();}
-con.appendChild((line=document.createElement('div')));
+con.appendChild(line=document.createElement('div'));
 line.style.width='760px';
-line.style.height='158px';
+line.style.height='578px';
 line.style.position='absolute';
-line.style.top='420px'
+line.style.top=dlh+'px'
 line.style.left='0';
 line.style.borderTop='2px ridge rgba(255,255,255,0.9)';
-line.style.backgroundColor='rgba(255,255,255,0.8)';
+line.style.backgroundColor=dlbgc;
 line.style.wordBreak='break-all';
 line.style.overflow='hidden';
 line.style.padding='10px 20px';
 line.style.zIndex='9999';
+line.style.transition='top 0.3s ease';
 line.onmousedown=function(e){e.preventDefault();}
-con.appendChild((hint=document.createElement('div')));
+con.appendChild(hint=document.createElement('div'));
 hint.style.width='16px';
 hint.style.height='16px';
 hint.style.position='absolute';
@@ -575,6 +625,19 @@ hint.style.left='784px';
 hint.style.backgroundColor='rgba(0,0,0,0.4)';
 hint.style.zIndex='19999';
 hint.style.display='none';
+con.appendChild(aud=document.createElement('div'));
+aud.style.display='none';
+hint.style.position='absolute';
+con.appendChild(menu=document.createElement('div'));
+menu.style.width='0px';
+menu.style.height='0px';
+menu.style.position='absolute';
+menu.style.top='0px';
+menu.style.right='0px';
+menu.style.zIndex='29999';
+menu.style.backgroundColor='rgba(255,255,255,0.6)';
+menu.style.transition='all 0.1s ease';
+
 
 nextC();
 }
