@@ -18,13 +18,16 @@ margin:0.3em 1em;
 <body>
 <script>
 function loadData(url){
-  if(url){
+  if(url.toString().match(/^(https?:\/\/|\.{0,2}\/)(.*?)\.js$/)){
     scriptLoad=document.createElement('script');
     scriptLoad.onload=function(){
       this.parentNode.removeChild(this);
     }
     scriptLoad.src=url;
     document.body.appendChild(scriptLoad);
+    return true;
+  }else{
+    return false;
   }
 }
 var pointer=0;
@@ -409,7 +412,7 @@ function show(str,DOM){
       case 'bg':
         if(bg=tag[2].match(/^=(['"])(.*?)\1.*?$/)){
           str=str.replace(/^<bg=(['"]).*?\1.*?>/,'');
-          if(url=bg[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/)){
+          if(url=bg[2].match(/^(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)$/)){
             con.style.backgroundImage='url("'+url[0]+'")';
             if(p=tag[2].match(/\sp=(['"])(.*?)\1/)){p=p[2];}
             if(w=tag[2].match(/\sw=(\d+)(\s|\/?$)/)){w=w[1]+'px';}
@@ -428,7 +431,7 @@ function show(str,DOM){
         str=str.replace(/^<img.*?>/,'');
         if(imgt=tag[2].match(/\s+src=(['"])(.*?)\1/)){
           img.appendChild((tmp=document.createElement('div')));
-          if(url=imgt[2].match(/(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)/)){
+          if(url=imgt[2].match(/^(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)$/)){
             nimg=new Image();
             nimg.src=url[0];
             tmp.appendChild(nimg);
