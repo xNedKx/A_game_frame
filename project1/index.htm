@@ -326,6 +326,8 @@ return str.toString().replace(/[^\s_0-9A-Za-z\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-
 }
 var dspd=100;
 var spd=[dspd];
+var dlh=420;
+var dlbgc='rgba(255,255,255,0.8)';
 var skip=false;
 var nextA=false;
 var nextP=null;
@@ -336,10 +338,10 @@ var sT='\u001a';
 var tT='\u001b';
 var ifEnd='\u001c';
 function show(str,DOM){
-  var tag,sp,ne,tc,bg,url,p,w,h,x,y,imgt,nimg,tmp,css,cls,vn,vv,ivn,ic,iv,igt,ir,vs,inp,inpt,inpv;
+  var tag,sp,ne,tc,bg,url,p,w,h,x,y,imgt,nimg,tmp,css,cls,vn,vv,ivn,ic,iv,igt,ir,vs,inp,inpt,inpv,lh;
   if(str.length>0){
     str=str.toString();
-    while(tag=str.match(/^<(a|div|span|p|img|input|var|if|spd|next|keep|skip|bg|color)(\s+[^\s]+.*?|=.*?|\/?)>/)){
+    while(tag=str.match(/^<(a|div|span|p|img|input|var|if|spd|next|keep|skip|bg|color|lh)(\s+[^\s]+.*?|=.*?|\/?)>/)){
       switch(tag[1]){
       case 'next':
         str=str.replace(/^<next.*?>/,'');
@@ -370,6 +372,17 @@ function show(str,DOM){
           str=str.replace(/^<color=.*?>/,'');
           line.style.color=tc[2];
         }
+      break;
+      case 'lh':
+        if(lh=tag[2].match(/^=(\d+)(\s|\/?$)/)){
+          line.style.top=(600-parseInt(lh[1]))+'px';
+        }else{
+          line.style.top=dlh+'px';
+        }
+        if(lbg=tag[2].match(/\sbgc=(['"])(.*?)\1/)){
+          line.style.backgroundColor=lbg[2]?lbg[2]:dlbgc;
+        }
+        str=str.replace(/^<lh.*?>/,'');
       break;
       case 'var':
         vs='';
@@ -429,7 +442,7 @@ function show(str,DOM){
       break;
       case 'img':
         str=str.replace(/^<img.*?>/,'');
-        if(imgt=tag[2].match(/\s+src=(['"])(.*?)\1/)){
+        if(imgt=tag[2].match(/\ssrc=(['"])(.*?)\1/)){
           img.appendChild((tmp=document.createElement('div')));
           if(url=imgt[2].match(/^(https?:\/\/|\.{0,2}\/)(.*?)(\.jpg|\.png|\.gif)$/)){
             nimg=new Image();
@@ -555,16 +568,17 @@ img.style.overflow='hidden';
 img.onmousedown=function(e){e.preventDefault();}
 con.appendChild((line=document.createElement('div')));
 line.style.width='760px';
-line.style.height='158px';
+line.style.height='578px';
 line.style.position='absolute';
-line.style.top='420px'
+line.style.top=dlh+'px'
 line.style.left='0';
 line.style.borderTop='2px ridge rgba(255,255,255,0.9)';
-line.style.backgroundColor='rgba(255,255,255,0.8)';
+line.style.backgroundColor=dlbgc;
 line.style.wordBreak='break-all';
 line.style.overflow='hidden';
 line.style.padding='10px 20px';
 line.style.zIndex='9999';
+line.style.transition='top 0.3s ease';
 line.onmousedown=function(e){e.preventDefault();}
 con.appendChild((hint=document.createElement('div')));
 hint.style.width='16px';
