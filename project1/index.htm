@@ -336,7 +336,7 @@ function show(str,DOM){
   var tag,sp,ne,tc,bg,url,p,w,h,x,y,imgt,nimg,tmp,css,cls,vn,vv,ivn,ic,iv,igt,ir,vs,inp,inpt,inpv;
   if(str.length>0){
     str=str.toString();
-    while(tag=str.match(/^<(a|div|span|p|img|spd|bg|color|next|keep|var|if|input)(\s+[^\s]+.*?|=.*?|\/?)>/)){
+    while(tag=str.match(/^<(a|div|span|p|img|input|var|if|spd|next|keep|skip|bg|color)(\s+[^\s]+.*?|=.*?|\/?)>/)){
       switch(tag[1]){
       case 'next':
         str=str.replace(/^<next.*?>/,'');
@@ -351,6 +351,10 @@ function show(str,DOM){
       case 'keep':
         str=str.replace(/^<keep.*?>/,'');
         keepL=true;
+      break;
+      case 'skip':
+        str=str.replace(/^<skip.*?>/,'');
+        skip=true;
       break;
       case 'spd':
         str=str.replace(/^<spd.*?>/,'');
