@@ -1,6 +1,14 @@
+//Writen By Lin, Arranged By Yz
+//
+tit=[
+'<span style="font-weight:bold;font-size:48px;">一　個　懸　疑　故　事</span>',//title
+'<div style="width:100%;height:100%;display:table;"><div style="display:table-cell;text-align:center;vertical-align:middle;">[開始遊戲]</div></div>',//start button
+'1,7,14,21,28'//preload image page
+];
+//
 lines=[
-'<bg="./BG1.jpg" p="0 -150px" w=800/><bg=""/><div style="text-align:center;"><span style="font-size:3em;" spd=200>一　個　懸　疑　故　事</span></div>',
-'<lh=0/><bg="./BG1.jpg" p="0 -150px" w=800 /><a gt=7></a><a gt=14></a><a gt=21></a><a gt=28></a><next spd=300/>',
+'<skip/><bg="./BG1.jpg" p="0 -150px" w=800/><bg=""/><div style="text-align:center;"><span style="font-size:3em;" spd=200>一　個　懸　疑　故　事</span></div>',
+'<lh=0/><bg="./BG1.jpg" p="0 -150px" w=800 /><next spd=1000/>',
 '<lh/><color="#111"/><span style="font-weight:bold;">在劍橋大學的公園裡，張庭瑜被尖銳的匕首畫破喉嚨一刀斃命。</span>',
 '<span style="font-weight:bold;">雪地上除了張庭瑜自己的足跡之外，只留下了另外兩個不像是人類腳印的痕跡。</span>',
 '<span style="font-weight:bold;">究竟是命運的糾纏，還是感情的糾葛，或者是金錢上的糾紛？\n\n到底兇手是誰？\n\n用什麼手法殺人？</span>',
@@ -39,6 +47,6 @@ lines=[
 '<img src="./C4.jpg" w=300 x=-80 y=80><span style="color:#6666E5;font-weight:bold;" spd=0>金甲一：</span>\n\n  抓錯人了，你的推理能力不夠喔。\n\n\n\n<div style="text-align:right;"><a gt=1 style="color:#666">[重頭來過]</a></div>',
 '<img src="./C4.jpg" w=300 x=-80 y=80><div style="color:#6666E5;font-weight:bold;" spd=0>金甲一：</div><p>  沒錯！兇手就是吳台蘭！</p>',
 '<img src="./C4.jpg" w=300 x=-80 y=80><div style="color:#6666E5;font-weight:bold;margin-bottom:0.8em;" spd=0>金甲一：</div><p>吳台蘭先假裝腳部受傷，誘使庭瑜背著她走入公園後，</p><p>拿出藏在身上的匕首從後面劃破庭瑜的喉嚨，</p><p>接著再利用從小學習的芭蕾舞技巧，</p><p>使用腳趾尖端小心翼翼地從雪地上不留足跡地離開公園。</p>',
-'<div style="text-align:center;"><span style="font-size:3em;" spd=200>成　功　破　案　！</span></div>\n\n\n<div style="text-align:right;"><a style="color:#666;" gt=0>[再玩一次]</a></div>'
-]
-//Writen By Lin, Arranged By Yz
+'<div style="text-align:center;"><span style="font-size:3em;" spd=200>成　功　破　案　！</span></div>\n\n\n<div style="text-align:right;"><a style="color:#666;" gt>[再玩一次]</a></div>',
+'<reset/>'
+];
