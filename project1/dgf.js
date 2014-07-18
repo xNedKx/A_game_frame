@@ -595,7 +595,8 @@ function initial(){
   con.style.overflow='hidden';
   con.style.backgroundRepeat='no-repeat';
   con.style.fontFamily='consolas';
-  con.style.fontSize=fs+"px";
+  con.style.fontSize=fs+'px';
+  con.style.cursor='default';
   con.appendChild(img=document.createElement('div'));
   img.style.width=cw+'px';
   img.style.height=ch+'px';
