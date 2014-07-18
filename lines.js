@@ -13,3 +13,4 @@ lines=[
 '<div><var n="name" s />，您要？</div><p><a gt=2>[進入迴圈]</a></p><p> </p><p><a gt>[離開迴圈]</a></p>',
 '<audio="./.ogg" bgm /><div>尚未新增其他測試。</div><p><var n="name" s /> 掰掰～</p>'
 ];
+reset();
