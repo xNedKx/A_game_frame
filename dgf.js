@@ -1,11 +1,28 @@
 /*Programed By YzC*/
 function loadData(url){
+  var scriptLoad;
   if(url.toString().match(/^(https?:\/\/|\.{0,2}\/)(.*?)\.js$/)){
     scriptLoad=document.createElement('script');
     scriptLoad.onload=function(){
       this.parentNode.removeChild(this);
     }
     scriptLoad.src=url;
+    document.body.appendChild(scriptLoad);
+    return true;
+  }else{
+    return false;
+  }
+}
+function loadCss(url){
+  var scriptLoad;
+  if(url.toString().match(/^(https?:\/\/|\.{0,2}\/)(.*?)\.css$/)){
+    scriptLoad=document.createElement('link');
+    scriptLoad.rel='stylesheet';
+    scriptLoad.type='text/css';
+    scriptLoad.onload=function(){
+      this.parentNode.removeChild(this);
+    }
+    scriptLoad.href=url;
     document.body.appendChild(scriptLoad);
     return true;
   }else{
@@ -29,6 +46,7 @@ function pointerN(go){
   return true;
 }
 function Cwait(){
+  var sels,inps;
   skip=false;
   nextP=null;
   hint.style.display='block';
@@ -46,6 +64,12 @@ function Cwait(){
         sels[op].removeAttribute('gt');
         preloadImg(sels[op].gt);
       }
+    }
+    inps=con.getElementsByClassName('input');
+    for(var op=0;op<inps.length;op++){
+      inps[op].onmousedown=function(e){e.stopPropagation();};
+      inps[op].onclick=function(e){e.stopPropagation()};
+      inps[op].value=inps[op].defaultValue;
     }
   }else{
     if(pointer<lines.length){
@@ -102,7 +126,7 @@ function removeTag(str,tag,sub){
   return str.substr(0,cc)+sub+str.substr(cc+(('</'+tag+'>').length));
 }
 function addGt(str,dom){
-  if(gt=str.match(/\sgt(=(-?\d+))?(\s|$)/)){
+  if(gt=str.match(/['"\s]gt(=(-?\d+))?(\s|$)/)){
     if(gt[2]){
       if(gt[2].substr(0,1)=='-'){gtn=lines.length+Number(gt[2])-1;}else{gtn=Number(gt[2]);}
       sel=true;
@@ -467,32 +491,31 @@ function simg(str,tag,d){
 }
 function sinput(str,tag,dom){
   var inp,inpt,inpv,inpm,css;
-  if(inp=tag.match(/\sn=(['"])(.*?)\1/)){
-    dom.appendChild(inpt=document.createElement('input'));
+  if(inp=tag.match(/^[^>]*\sn=(['"])(.*?)\1/)){
+    inpt=document.createElement('input')
     inpt.className="input";
     inpt.id=removeNU(inp[2]);
-    inpt.onmousedown=function(e){e.stopPropagation();};
-    inpt.onclick=function(e){e.stopPropagation();};
-    if(inpv=tag.match(/\sv=(['"])(.*?)\1/)){
-      inpt.value=removeNU(inpv[2]);
-    }else if(inpv=tag.match(/\sv=(.*?)(\s|\/?$)/)){
-      if(inpv[1]=='rnd'){
-        inpt.value=Math.random(); 
-      }else if(vars.hasOwnProperty(inpv[1])){
-        inpt.value=vars[inpv[1]];
-      }
-    }
-    if(inpm=tag.match(/\smaxL=(\d+)(\s|\/?$)/)){
+    if(inpm=tag.match(/^[^>]*\smaxL=(\d+)(\s|\/?$)/)){
       inpt.maxLength=parseInt(inpm[1]);
     }else{
       inpt.maxLength=24;
     }
-    if(css=tag.match(/\sstyle=(['"])(.*?)\1/)){
+    if(inpv=tag.match(/^[^>]*\sv=(['"])(.*?)\1/)){
+      inpt.setAttribute('value',removeNU(inpv[2]));
+    }else if(inpv=tag.match(/^[^>]*\sv=(.*?)(\s|\/?$)/)){
+      if(inpv[1]=='rnd'){
+        inpt.setAttribute('value',Math.random()); 
+      }else if(vars.hasOwnProperty(inpv[1])){
+        inpt.setAttribute('value',vars[inpv[1]]);
+      }
+    }
+    if(css=tag.match(/^[^>]*\sstyle=(['"])(.*?)\1/)){
       inpt.style.cssText=css[2];
       if(!css[2].match(/(^|\s|;)width:(.*?)(;|$)/)){
         inpt.style.width='160px';
       }
     }
+    dom.appendChild(inpt);
   }
   return [str.replace(/^<input.*?>/,''),dom];
 }
@@ -515,16 +538,19 @@ function saudio(str,tag,dom){
   return [str.replace(/^<audio.*?>/,''),dom];
 }
 function stag(str,tag,dom){
-  var tmp,css,gt,sp,nt;
+  var tmp,css,cls,gt,sp,nt;
   if(nt=str.match(/^<(a|div|span|p).*?>(.|\n)*<\/\1>/)){
     dom.appendChild(tmp=document.createElement(nt[1]));
-    if(css=tag.match(/\sstyle=(['"])(.*?)\1/)){
+    if(css=tag.match(/^[^>]*\sstyle=(['"])(.*?)\1/)){
       tmp.style.cssText=css[2];
     }
     if(gt=nt[0].match(/^<a(.*?)>(.|\n)*<\/a>/)){
       tmp=addGt(gt[1],tmp);
     }
-    if(sp=tag.match(/\sspd=(\d+)(\s|\/?$)/)){
+    if(cls=tag.match(/^[^>]*\sclass=(['"])(.*?)\1/)){
+      tmp.className=cls[2];
+    }
+    if(sp=tag.match(/^[^>]*\sspd=(\d+)(\s|\/?)/)){
       spd.push(Number(sp[1]));
       return [removeTag(str,nt[1],sc['sT']),tmp];
     }else{
@@ -543,11 +569,11 @@ var keepL=false;
 var sel=false;
 var con,line,hint;
 var sc={sT:'\u001a',tT:'\u001b',ifEnd:'\u001c',null:'\u0000'};
-function show(str,DOM){
+function show(st,DOM){
   var tag,res;
-  if(str.length>0){
-    str=str.toString();
-    res=[str,DOM];
+  if(st.length>0){
+    st=st.toString();
+    res=[st,DOM];
     while(tag=res[0].match(RegExp('^<('+tags.join('|')+')(\\s+[^\\s]+.*?|=.*?|\\/?)>'))){
       if(tag[1]=='reset'){return reset();}
       if(tf.hasOwnProperty(tag[1])){
@@ -573,6 +599,7 @@ var cw=800;
 var ch=600;
 var dlh=420;
 var dlbgc='rgba(255,255,255,0.8)';
+var dco='rgba(70,70,70,1)';
 var fs=18;
 function initial(){
   if(con){
@@ -590,7 +617,7 @@ function initial(){
   con.style.height=ch+'px';
   con.style.position='relative';
   con.style.backgroundColor='#000';
-  con.style.color='#333';
+  con.style.color=dco;
   con.style.margin='10px auto';
   con.style.overflow='hidden';
   con.style.backgroundRepeat='no-repeat';
