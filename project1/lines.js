@@ -50,5 +50,4 @@ lines=[
 '<div style="text-align:center;"><span style="font-size:3em;" spd=200>成　功　破　案　！</span></div>\n\n\n<div style="text-align:right;"><a style="color:#666;" gt>[再玩一次]</a></div>',
 '<reset/>'
 ];
-resetWH();
 reset();
