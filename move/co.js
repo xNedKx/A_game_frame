@@ -8,9 +8,7 @@ function collision(x1,y1,w1,h1,x2,y2,w2,h2){
   if(Xcollision(x1,w1,x2,w2)&&Ycollision(y1,h1,y2,h2)){return true;}else{return false;}
 }
 function DOMcollision(d1,d2){
-  if(collision(d1.offsetLeft,d1.offsetTop,d1.offsetWidth,d1.offsetHeight,d2.offsetLeft,d2.offsetTop,d2.offsetWidth,d2.offsetHeight)){
-    return true;
-  }else{return false;}
+  if(collision(d1.offsetLeft,d1.offsetTop,d1.offsetWidth,d1.offsetHeight,d2.offsetLeft,d2.offsetTop,d2.offsetWidth,d2.offsetHeight)){return true;}else{return false;}
 }
 var o=document.createElement('div');
 o.style.width='20px';
